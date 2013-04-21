@@ -1,0 +1,401 @@
+---
+layout: post
+title: "PHP zval"
+date: 2013-04-21 22:54
+comments: true
+categories: 
+---
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+#1. PHP变量
+
+PHP是弱类型语言,变量不需要声明类型, 直接使用, 根据调用需要自动进行类型转换;
+
+实际上PHP是用C来实现的, 在编写扩展时, 需要了解PHP弱类型变量在C中是如何实现的
+
+## 1.1 zval之定义
+
+在Zend/zend.h中, 可以看到
+
+    struct _zval_struct {
+         /* Variable information */
+         zvalue_value value;     /* value */
+         zend_uint refcount;   //  5.4中定义为refcount__gc
+         zend_uchar type;    /* active type */
+         zend_uchar is_ref;   //   5.4中定义为is_ref__gc
+    };
+
+    typedef struct _zval_struct zval;
+
+这里需要注意,  **\_zval\_struct**的定义在PHP5.2和5.4中并不一样, 因此不建议直接访问或操作成员,
+而是通过以下宏来处理zval结构体中的成员:
+
+### 1.1.1 type
+
+type标识PHP变量的类型
+
+我们都知道，PHP虽然是弱类型语言, 底层实际上还是用C来实现. PHP对于任何类型的变量都是存储在zval中的, 通过type来确定该变量实际的类型
+
+在扩展中，type可以通过以下宏获取和判断:
+
+    #define Z_TYPE(zval)        (zval).type
+    #define Z_TYPE_P(zval_p)    Z_TYPE(*zval_p)
+    #define Z_TYPE_PP(zval_pp)  Z_TYPE(**zval_pp)
+
+    /* data types */
+    /* All data types <= IS_BOOL have their constructor/destructors skipped */
+    #define IS_NULL     0
+    #define IS_LONG     1
+    #define IS_DOUBLE   2
+    #define IS_BOOL     3
+    #define IS_ARRAY    4
+    #define IS_OBJECT   5
+    #define IS_STRING   6
+    #define IS_RESOURCE 7
+    #define IS_CONSTANT 8
+    #define IS_CONSTANT_ARRAY   9
+    #define IS_CALLABLE 10   //   5.4新增
+
+### 1.1.2 is\_ref
+
+is\_ref标识PHP变量是否是引用类型, 例如我们通过`$a = &$b`来定义的变量a，这时zval变量就会被标识为引用类型,
+
+对is\_ref可以通过以下宏判断和设置:
+
+    // from PHP 5.4
+    #define Z_ISREF(z)          Z_ISREF_P(&(z))
+    #define Z_ISREF_P(pz)           zval_isref_p(pz)
+    #define Z_ISREF_PP(ppz)         Z_ISREF_P(*(ppz))
+    static zend_always_inline zend_bool zval_isref_p(zval* pz) {
+        return pz->is_ref__gc;
+    }
+
+    #define Z_SET_ISREF_P(pz)       zval_set_isref_p(pz) // is_ref =1
+    #define Z_UNSET_ISREF_P(pz)     zval_unset_isref_p(pz) // is_ref=0
+    #define Z_SET_ISREF_TO_P(pz, isref) zval_set_isref_to_p(pz, isref) // is_ref = isref(true or false)
+
+### 1.1.3 refcount
+
+refcount标识zval引用计数
+
+PHP变量的copy\_on\_write就是通过refcount来实现的, PHP为了提高性能，在拷贝PHP变量时，实际上是不执行内存拷贝的，只需增加refcount即可;
+而在对该zval进行写操作时, 才会进行copy, 这就是PHP copy\_on\_write的实现方式:
+
+    if (is_ref != 0) 
+        是引用类型，不分离变量，直接写该zvall，此后所有引用变量的值都会发生变化
+    else
+        不是引用类型，分离该变量，重新创建一个zval变量并拷贝全部数据，同时将refcount置1 is_ref置0; 原来的zval变量之需要refcount--即可
+
+具体实现可以参考SEPARATE\_ZVAL宏
+
+对refcount可以通过以下宏判断和操作: 
+
+    // from PHP 5.4
+    #define Z_REFCOUNT(z)           Z_REFCOUNT_P(&(z))
+    #define Z_REFCOUNT_P(pz)        zval_refcount_p(pz)
+    #define Z_REFCOUNT_PP(ppz)      Z_REFCOUNT_P(*(ppz))
+    static zend_always_inline zend_uint zval_refcount_p(zval* pz) {
+        return pz->refcount__gc;
+    }
+
+    #define Z_SET_REFCOUNT_P(pz, rc)    zval_set_refcount_p(pz, rc)
+    #define Z_ADDREF_P(pz)          zval_addref_p(pz)  // +1
+    #define Z_DELREF_P(pz)          zval_delref_p(pz)  // -1
+ 
+**这里需要注意, 扩展中对于refcount操作尤其需要注意, 错误处理很可能导致PHP引用计数异常，可能导致内存泄露或释放变量时直接coredump!**
+
+### 1.1.4 value
+
+value保存zval变量的值
+
+上面说了PHP通过type确定变量类型, 那么不同类型的变量如何保存在同一个value变量中呢? 应该想到在C语言中可以通过union来定义, 这就是PHP实现弱类型的基础
+
+    //PHP 5.2和5.4中相同
+    typedef union _zvalue_value {
+        long lval;                  /* long value */
+        double dval;                /* double value */
+        struct {
+            char *val;
+            int len;
+        } str;
+        HashTable *ht;              /* hash table value */
+        zend_object_value obj;
+    } zvalue_value;
+
+浮点数或整数本别通过lval或dval来保存, 这里可以看出, PHP对整数支持的范围为long,而非unsigned long, 对于超出限制的变量, PHP会转换为double类型保存, 需要获取整形时, PHP再将其转换为long, 需要注意的是, 往往这时会出现丢失精度的问题
+
+字符串通过上面str结构来保存, 并非以'\0'标注结束, 而是通过len记录长度, 但为了避免操作使用时越界, PHP也会在字符床末尾添加'\0'.
+
+array类型则是通过HashTable保存, ht是指向HashTable的指针, 关于array类型变量如何在HashTable中存储, 后面再单独说明
+
+## 1.2 zval之读写
+
+对各个类型zval赋值操作的宏一般以ZVAL\_TYPE命名, 相应的zval \* 为ZVAL_TYPE\_P, zval \*\* 为ZVAL_TYPE_PP
+
+这部分操作可以在zend\_operators.h  zend_API.h察看, 下面把各类型zval读写操作的宏拿出来看下:
+
+*IS\_NULL 0*
+
+    #define ZVAL_NULL(z) {          \
+        Z_TYPE_P(z) = IS_NULL;      \
+    }
+
+*IS\_LONG 1  IS\_CONSTANT 8*
+
+    #define Z_LVAL(zval)            (zval).value.lval
+    #define ZVAL_LONG(z, l) {       \
+        zval *__z = (z);            \
+        Z_LVAL_P(__z) = l;          \
+        Z_TYPE_P(__z) = IS_LONG;    \
+    }
+
+*IS\_DOUBLE  2*
+
+    #define Z_DVAL(zval)            (zval).value.dval
+    #define ZVAL_DOUBLE(z, d) {     \
+        zval *__z = (z);            \
+        Z_DVAL_P(__z) = d;          \
+        Z_TYPE_P(__z) = IS_DOUBLE;  \
+    }
+
+*IS\_BOOL  3*
+
+    #define Z_BVAL(zval)            ((zend_bool)(zval).value.lval)
+    #define ZVAL_BOOL(z, b) do {    \  //5.4
+        zval *__z = (z);            \
+                    Z_LVAL_P(__z) = ((b) != 0); \
+                    Z_TYPE_P(__z) = IS_BOOL;    \
+    } while (0)
+    #define ZVAL_FALSE(z)                   ZVAL_BOOL(z, 0)
+    #define ZVAL_TRUE(z)                    ZVAL_BOOL(z, 1)
+
+
+*IS\_ARRAY  4 IS\_CONSTANT\_ARRAY 9*
+
+    #define Z_ARRVAL(zval)          (zval).value.ht
+
+对array类型的处理操作后面会单独说明, 包括1.查找 2.遍历 3.添加删除
+
+    zval * init_array,* headers_arr;
+    MAKE_STD_ZVAL(init_array);
+    array_init(init_array); 
+    array_init_size (arg, size)
+
+    add_assoc_stringl(init_array, “querystring”, _querystring,
+            strlen(_querystring), 1);
+
+*IS\_OBJECT 5*
+
+    #define Z_OBJVAL(zval)          (zval).value.obj
+    #define Z_OBJ_HANDLE(zval)      Z_OBJVAL(zval).handle
+    #define Z_OBJ_HT(zval)          Z_OBJVAL(zval).handlers
+    #define Z_OBJCE(zval)           zend_get_class_entry(&(zval) TSRMLS_CC)
+    #define Z_OBJPROP(zval)         Z_OBJ_HT((zval))->get_properties(&(zval) TSRMLS_CC)
+    #define Z_OBJ_HANDLER(zval, hf) Z_OBJ_HT((zval))->hf
+    #define Z_OBJDEBUG(zval,is_tmp) (Z_OBJ_HANDLER((zval),get_debug_info)?Z_OBJ_HANDLER((zval),get_debug_info)(&(zval),&is_tmp TSRMLS_CC):(is_tmp=0,Z_OBJ_HANDLER((zval),get_properties)?Z_OBJPROP(zval):NULL))  //   5.4新增
+
+*IS\_STRING 6*
+
+    #define Z_STRVAL(zval)          (zval).value.str.val
+    #define Z_STRLEN(zval)          (zval).value.str.len
+
+    #define ZVAL_STRING(z, s, duplicate) do {   \
+        const char *__s=(s);                    \
+        zval *__z = (z);                        \
+        Z_STRLEN_P(__z) = strlen(__s);          \    // 通过strlen计算, 这里需要\0结尾的char *, 而不是zval中的
+        Z_STRVAL_P(__z) = (duplicate?estrndup(__s, Z_STRLEN_P(__z)):(char*)__s);\
+                          Z_TYPE_P(__z) = IS_STRING;                            \
+    } while (0)
+
+注意duplicate参数, 对于一个已经创建好的zval \*z, 将char \*字符串s拷贝或直接赋值到zval中
+duplicate非零, zval的str保存\0结尾副本
+
+    #define ZVAL_STRINGL(z, s, l, duplicate) do {   \
+        const char *__s=(s); int __l=l;             \
+        zval *__z = (z);                            \
+        Z_STRLEN_P(__z) = __l;                      \         
+        Z_STRVAL_P(__z) = (duplicate?estrndup(__s, __l):(char*)__s);\
+        Z_TYPE_P(__z) = IS_STRING;                  \
+    } while (0)
+
+    #define ZVAL_EMPTY_STRING(z) do {   \
+        zval *__z = (z);                \
+        Z_STRLEN_P(__z) = 0;            \
+        Z_STRVAL_P(__z) = STR_EMPTY_ALLOC();\
+        Z_TYPE_P(__z) = IS_STRING;      \
+    } while (0)
+    
+    #define estrdup (s)            _estrdup((s) ZEND_FILE_LINE_CC ZEND_FILE_LINE_EMPTY_CC)
+    #define estrndup (s, length)   _estrndup((s), (length) ZEND_FILE_LINE_CC ZEND_FILE_LINE_EMPTY_CC)
+
+其实就是emalloc后memcpy, 返回以\0结尾的char *！！ C可以直接用
+
+    ZEND_API char *_estrndup(const char *s, uint length ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
+    {
+        char *p;
+    #ifdef ZEND_SIGNALS
+        TSRMLS_FETCH();
+    #endif
+        HANDLE_BLOCK_INTERRUPTIONS();
+    
+        p = (char *) _emalloc(length+1 ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
+        if (UNEXPECTED(p == NULL)) {
+            HANDLE_UNBLOCK_INTERRUPTIONS();
+            return p;
+        }
+        memcpy(p, s, length);
+        p[length] = 0;
+        HANDLE_UNBLOCK_INTERRUPTIONS();
+        return p;
+    }
+
+
+*IS\_RESOURCE 7*
+
+    #define Z_RESVAL(zval)          (zval).value.lval
+    #define ZVAL_RESOURCE(z, l) do {    \
+        zval *__z = (z);                \   // 5.4增加, 更加安全 
+        Z_LVAL_P(__z) = l;              \
+        Z_TYPE_P(__z) = IS_RESOURCE;\
+    } while (0)
+
+## 1.3 Zval之拷贝
+
+    #define ZVAL_ZVAL(z, zv, copy, dtor) {      \  // php 5.4版本
+        zend_uchar is_ref = Z_ISREF_P(z);       \
+        zend_uint refcount = Z_REFCOUNT_P(z);   \
+        ZVAL_COPY_VALUE(z, zv);                 \   //只覆盖了value和type        
+        if (copy) {                             \
+            zval_copy_ctor(z);                  \
+        }                                       \
+        if (dtor) {                             \
+            if (!copy) {                        \
+                ZVAL_NULL(zv);                  \
+            }                                   \
+            zval_ptr_dtor(&zv);                 \
+        }                                       \
+        Z_SET_ISREF_TO_P(z, is_ref);            \  //5.4新增宏
+        Z_SET_REFCOUNT_P(z, refcount);          \
+    }
+
+    #define ZVAL_COPY_VALUE(z, v)               \
+        do {                                    \
+            (z)->value = (v)->value;            \
+            Z_TYPE_P(z) = Z_TYPE_P(v);          \
+        } while (0)
+
+## 1.4 zval之返回值
+
+在扩展中, 返回值实际上就是return\_value,这个变量可以将PHP\_FUNCTION宏站开看到. 也就是说, 处理返回值其实就是将需要返回的数据赋值给return\_value, PHP也已经封装好了相关处理的宏.
+    
+    #define RETVAL_RESOURCE(l)              ZVAL_RESOURCE(return_value, l)
+    #define RETVAL_BOOL(b)                  ZVAL_BOOL(return_value, b)
+    #define RETVAL_NULL()                   ZVAL_NULL(return_value)
+    #define RETVAL_LONG(l)                  ZVAL_LONG(return_value, l)
+    #define RETVAL_DOUBLE(d)                ZVAL_DOUBLE(return_value, d)
+    #define RETVAL_STRING(s, duplicate)         ZVAL_STRING(return_value, s, duplicate)
+    #define RETVAL_STRINGL(s, l, duplicate)     ZVAL_STRINGL(return_value, s, l, duplicate)
+    #define RETVAL_EMPTY_STRING()           ZVAL_EMPTY_STRING(return_value)
+    #define RETVAL_ZVAL(zv, copy, dtor)     ZVAL_ZVAL(return_value, zv, copy, dtor)
+    #define RETVAL_FALSE                    ZVAL_BOOL(return_value, 0)
+    #define RETVAL_TRUE                     ZVAL_BOOL(return_value, 1)
+    
+    #define RETURN_RESOURCE(l)              { RETVAL_RESOURCE(l); return; }
+    #define RETURN_BOOL(b)                  { RETVAL_BOOL(b); return; }
+    #define RETURN_NULL()                   { RETVAL_NULL(); return;}
+    #define RETURN_LONG(l)                  { RETVAL_LONG(l); return; }
+    #define RETURN_DOUBLE(d)                { RETVAL_DOUBLE(d); return; }
+    #define RETURN_STRING(s, duplicate)     { RETVAL_STRING(s, duplicate); return; }
+    #define RETURN_STRINGL(s, l, duplicate) { RETVAL_STRINGL(s, l, duplicate); return; }
+    #define RETURN_EMPTY_STRING()           { RETVAL_EMPTY_STRING(); return; }
+    #define RETURN_ZVAL(zv, copy, dtor)     { RETVAL_ZVAL(zv, copy, dtor); return; }
+    #define RETURN_FALSE                    { RETVAL_FALSE; return; }
+    #define RETURN_TRUE                     { RETVAL_TRUE; return; }
+
+
+## 1.5 zval之创建
+
+在zend.h中可以看到, 可以这样为zval *类型变量分配内存并初始化
+
+    #define MAKE_STD_ZVAL(zv)   \
+        ALLOC_ZVAL(zv);         \
+        INIT_PZVAL(zv);
+
+    #define ALLOC_ZVAL(z)       \
+        (z) = (zval *) emalloc(sizeof(zval))
+
+    #define INIT_PZVAL(z)       \
+        (z)->refcount__gc = 1;  \
+        (z)->is_ref__gc = 0;
+
+这里通过emalloc为zval* 变量分配了空间, 但只初始化了引用和引用计数, 具体类型和值需要再进行对应的初始化
+
+也可以对一个已分配空间的zval变量进行初始化, 这里会将类型置为NULL
+
+    #define INIT_ZVAL(z) z = zval_used_for_init;
+
+    extern ZEND_API zval zval_used_for_init;  //zval.h
+    ZEND_API zval zval_used_for_init; /* True global variable */  // zval.c
+
+可以看到，这个初始化是通过全局变量赋值进行的，而这个全局变量由Zend在启动时进行初始化
+
+    Z_UNSET_ISREF(zval_used_for_init);   // 5.4
+    Z_SET_REFCOUNT(zval_used_for_init, 1);
+    Z_TYPE(zval_used_for_init) = IS_NULL;
+
+## 1.6 zval之类型转换
+
+编写扩展时, 如果需要转换变量的类型，可以使用下面的宏处理(见zend_operators.h)
+
+    ZEND_API void convert_scalar_to_number(zval *op TSRMLS_DC);
+    ZEND_API void _convert_to_string(zval *op ZEND_FILE_LINE_DC);
+    ZEND_API void convert_to_long(zval *op);
+    ZEND_API void convert_to_double(zval *op);
+    ZEND_API void convert_to_long_base(zval *op, int base);
+    ZEND_API void convert_to_null(zval *op);
+    ZEND_API void convert_to_boolean(zval *op);
+    ZEND_API void convert_to_array(zval *op);
+    ZEND_API void convert_to_object(zval *op);
+    ZEND_API void multi_convert_to_long_ex(int argc, …);
+    ZEND_API void multi_convert_to_double_ex(int argc, …);
+    ZEND_API void multi_convert_to_string_ex(int argc, …);
+    ZEND_API int add_char_to_string(zval *result, zval *op1, zval *op2);
+    ZEND_API int add_string_to_string(zval *result, zval *op1, zval *op2);
+    #define convert_to_string(op) if ((op)->type != IS_STRING) { _convert_to_string((op) ZEND_FILE_LINE_CC); }
+
+上面的操作可以将zval \*所指向的变量转换为相应的类型,
+但如果不希望影响原有变量类型，可以通过下面的宏处理, 在类型转换时进行copy\_on\_write
+
+    #define convert_to_boolean_ex(ppzv) convert_to_ex_master(ppzv, boolean, BOOL)
+    #define convert_to_long_ex(ppzv)    convert_to_ex_master(ppzv, long, LONG)
+    #define convert_to_double_ex(ppzv)  convert_to_ex_master(ppzv, double, DOUBLE)
+    #define convert_to_string_ex(ppzv)  convert_to_ex_master(ppzv, string, STRING)
+    #define convert_to_array_ex(ppzv)   convert_to_ex_master(ppzv, array, ARRAY)
+    #define convert_to_object_ex(ppzv)  convert_to_ex_master(ppzv, object, OBJECT)
+    #define convert_to_null_ex(ppzv)    convert_to_ex_master(ppzv, null, NULL)
+    #define convert_scalar_to_number_ex(ppzv)                           \                                        
+        if (Z_TYPE_PP(ppzv)!=IS_LONG && Z_TYPE_PP(ppzv)!=IS_DOUBLE) {   \                                        
+            if (!Z_ISREF_PP(ppzv)) {                                    \                                        
+                SEPARATE_ZVAL(ppzv);                                    \                                        
+            }                                                           \                                        
+            convert_scalar_to_number(*ppzv TSRMLS_CC);                  \                                        
+        } 
+
+    #define convert_to_ex_master(ppzv, lower_type, upper_type)      \
+        if ((*ppzv)->type!=IS_##upper_type) {                       \
+            SEPARATE_ZVAL_IF_NOT_REF(ppzv);                         \
+            convert_to_##lower_type(*ppzv);                         \
+        }
+
+## 1.7 zval之参数传递
+
+编写扩展时, 需要获zend_parse_parameters取PHP传递的参数
+
+    zval *pind, **val;
+    long opt;
+    
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rlZ", &pind, &opt, &val) == FAILURE) {
+        return;
+    } 
+
+
+

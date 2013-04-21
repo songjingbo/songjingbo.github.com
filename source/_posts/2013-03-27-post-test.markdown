@@ -1,0 +1,9 @@
+---
+layout: post
+title: "post test"
+date: 2013-03-27 01:40
+comments: true
+categories: 
+---
+# move blog to github
+该用markdown写bolg，处理排版的确更方便一些

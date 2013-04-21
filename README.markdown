@@ -36,3 +36,9 @@ THE SOFTWARE IS PROVIDED ‘AS IS’, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 #### If you want to be awesome.
 - Proudly display the 'Powered by Octopress' credit in the footer.
 - Add your site to the Wiki so we can watch the community grow.
+
+#### Useage
+执行rake new_post["my first blog"]，这样会在octopress的/source/_post下生成一个markdown文件，可以用文本软件进行编辑
+完成编辑后执行rake generate，生成。
+执行rake preview地，可以在浏览器内以这个地址进行预览。
+最后执行rake deploy，将日志提交到github上
