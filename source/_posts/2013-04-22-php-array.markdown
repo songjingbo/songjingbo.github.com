@@ -84,6 +84,8 @@ Hashtable的定义在如下(PHP 5.2 5.4保存一致)
     } HashTable;
 ```
 
+Hashtable中每一个item保存在Bucket结构中，注意这里PHP维护了2个双向链表
+
 ``` c bucket defination
     typedef struct bucket {
         ulong h ;       // hash值，整形下标
@@ -159,6 +161,7 @@ Hashtable的定义在如下(PHP 5.2 5.4保存一致)
 其中hashtable元素的析构函数pDestructor为一个 void (void \*)的函数指针, 这里使用的是ZVAL\_PTR\_DTOR;
 函数参数实际上为zval\*\* 类型, 内部使用时需要进行强转
 
+``` c hashtable destructor
     #define ZVAL_PTR_DTOR ( void (*)(void *)) zval_ptr_dtor_wrapper
     #define zval_ptr_dtor_wrapper _zval_ptr_dtor
 
@@ -186,12 +189,14 @@ Hashtable的定义在如下(PHP 5.2 5.4保存一致)
             GC_ZVAL_CHECK_POSSIBLE_ROOT(*zval_ptr);  // array或object释放资源
         }
     }
+```
 
 
 ## 2.4 Hashtable之插入
 
 处理Hashtable插入操作的api如下(5.2.4增加了 char* key的const约束, 定义更加规范, 可以在zend\_API.h zend\_hash.h看到这些定义)
     
+``` c hashtable insert (key is str)
     #define add_assoc_long (__arg, __key, __n) add_assoc_long_ex(__arg, __key, strlen(__key)+1, __n)
     #define add_assoc_null (__arg, __key) add_assoc_null_ex(__arg, __key, strlen(__key) + 1)
     #define add_assoc_bool (__arg, __key, __b) add_assoc_bool_ex(__arg, __key, strlen(__key)+1, __b)
@@ -210,9 +215,11 @@ Hashtable的定义在如下(PHP 5.2 5.4保存一致)
     ZEND_API int add_assoc_string_ex(zval *arg , const char *key, uint key_len, char *str, int duplicate );
     ZEND_API int add_assoc_stringl_ex(zval *arg , const char *key, uint key_len , char *str , uint length, int duplicate);
     ZEND_API int add_assoc_zval_ex(zval *arg , const char *key, uint key_len, zval *value);
+```
 
 上面是插入string类型key，而如果需要插入long型key的数据，可以使用这些
 
+``` c hashtable insert (key is long)
     ZEND_API int add_index_long(zval *arg , ulong idx, long n);
     ZEND_API int add_index_null(zval *arg , ulong idx);
     ZEND_API int add_index_bool(zval *arg , ulong idx, int b);
@@ -230,9 +237,11 @@ Hashtable的定义在如下(PHP 5.2 5.4保存一致)
     ZEND_API int add_next_index_string(zval *arg , const char *str, int duplicate );
     ZEND_API int add_next_index_stringl(zval *arg , const char *str, uint length , int duplicate);
     ZEND_API int add_next_index_zval(zval *arg , zval *value );
+```
 
 这里，以add\_assoc\_string\_ex为例, 进一步看下在hashtable中插入数据的过程(zend\_API.h)
 
+``` c hashtable add_assoc_string_ex
     ZEND_API int add_assoc_string_ex(zval *arg , const char *key, uint key_len, char *str, int duplicate )
     {
         zval * tmp;
@@ -249,11 +258,13 @@ Hashtable的定义在如下(PHP 5.2 5.4保存一致)
         // index update  nKeyLength包括 \0 需要是strlen+1
         return zend_hash_update (ht, arKey, nKeyLength , pData, nDataSize, pDest);
     }
+```
 
 可见，void\*的pData其实是zval\*\*, ndatasize这里就是指针大小(zend_hash.h).
 如果是数字类型，这里要注意ZEND_HANDLE_NUMERIC，这个宏处理了key为数值内容的字符串时
 注意，结尾非空，有前导0，超过long11or20,且有符号long未溢出，使用zend_hash_index_update 
 
+``` c 
     #define ZEND_HANDLE_NUMERIC (key, length, func) do {         \
         ulong idx;                                               \
         ZEND_HANDLE_NUMERIC_EX(key, length, idx, return func);   \         //注意如果是整型这里直接返回了
@@ -293,10 +304,11 @@ Hashtable的定义在如下(PHP 5.2 5.4保存一致)
     		}																	\
     	}																		\
     } while (0)
-
+```
 
 hashtable long型key的插入更新接的过程口
 
+``` c hashtable update(key is long)
     #define zend_hash_index_update (ht, h, pData, nDataSize, pDest) \
         _zend_hash_index_update_or_next_insert(ht, h, pData, nDataSize, pDest, HASH_UPDATE ZEND_FILE_LINE_CC)
 
@@ -369,17 +381,21 @@ hashtable long型key的插入更新接的过程口
         ZEND_HASH_IF_FULL_DO_RESIZE(ht);
         return SUCCESS;
     }
+```
 
 
 非数字类型，hashtable中add或update，由\_zend\_hash\_add\_or\_update实现
 
+``` c hashtable update(key is str)
     #define zend_hash_update(ht, arKey, nKeyLength, pData, nDataSize, pDest) \
         _zend_hash_add_or_update(ht, arKey, nKeyLength, pData, nDataSize, pDest, HASH_UPDATE ZEND_FILE_LINE_CC)
     #define zend_hash_add(ht, arKey, nKeyLength, pData, nDataSize, pDest) \
         _zend_hash_add_or_update(ht, arKey, nKeyLength, pData, nDataSize, pDest, HASH_ADD ZEND_FILE_LINE_CC)
+```
 
 hashtable string类型key的插入更新函数
 
+``` c hashtable zend_hash_add_or_update
     ZEND_API int _zend_hash_add_or_update(HashTable *ht, const char *arKey, uint nKeyLength, void *pData, uint nDataSize, void **pDest, int flag ZEND_FILE_LINE_DC)
     {
         ulong h;
@@ -461,6 +477,7 @@ hashtable string类型key的插入更新函数
         ZEND_HASH_IF_FULL_DO_RESIZE(ht);          /* If the Hash table is full, resize it */
         return SUCCESS;
     }
+```
 
 检查bucket 数组是否初始化
 
