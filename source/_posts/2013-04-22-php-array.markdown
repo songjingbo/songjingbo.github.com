@@ -1,0 +1,772 @@
+---
+layout: post
+title: "PHP array"
+date: 2013-04-22 01:37
+comments: true
+categories: 
+---
+#2. PHP hashtable
+
+## 2.1 hashtable之hash函数
+
+PHP hashtable的hash函数如下:
+
+<!--more-->
+ 
+``` c hash func
+    static inline ulong zend_inline_hash_func(const char *arKey, uint nKeyLength )
+    {
+        register ulong hash = 5381;
+    
+        /* variant with the hash unrolled eight times */
+        for (; nKeyLength >= 8; nKeyLength -= 8 ) {
+            hash = (( hash << 5) + hash) + *arKey++;
+            hash = (( hash << 5) + hash) + *arKey++;
+            hash = (( hash << 5) + hash) + *arKey++;
+            hash = (( hash << 5) + hash) + *arKey++;
+            hash = (( hash << 5) + hash) + *arKey++;
+            hash = (( hash << 5) + hash) + *arKey++;
+            hash = (( hash << 5) + hash) + *arKey++;
+            hash = (( hash << 5) + hash) + *arKey++;
+        }
+        switch ( nKeyLength) {
+            case 7 : hash = ((hash << 5 ) + hash) + * arKey++; /* fallthrough… */
+            case 6 : hash = ((hash << 5 ) + hash) + * arKey++; /* fallthrough… */
+            case 5 : hash = ((hash << 5 ) + hash) + * arKey++; /* fallthrough… */
+            case 4 : hash = ((hash << 5 ) + hash) + * arKey++; /* fallthrough… */
+            case 3 : hash = ((hash << 5 ) + hash) + * arKey++; /* fallthrough… */
+            case 2 : hash = ((hash << 5 ) + hash) + * arKey++; /* fallthrough… */
+            case 1 : hash = ((hash << 5 ) + hash) + * arKey++; break;
+            case 0 : break ;
+                     EMPTY_SWITCH_DEFAULT_CASE ()
+        }
+        return hash;
+    }
+```
+
+## 2.2 hashtable之定义
+
+对于array类型的zval，记录指向一个Hashtable的指针
+
+``` c get hashtable 
+    typedef union _zvalue_value {
+        long lval;                  /* long value */
+        double dval;                /* double value */
+        struct {
+            char *val;
+            int len;
+        } str;
+        HashTable *ht;              /* hash table value */
+        zend_object_value obj;
+    } zvalue_value;
+    #define Z_ARRVAL(zval)          (zval).value.ht   //HashTable *
+```
+
+Hashtable的定义在如下(PHP 5.2 5.4保存一致)
+
+``` c zval hashtable defination
+    typedef struct _hashtable {
+        uint nTableSize;  // 初始化为8 hash表元素数目 2的n次方,nNumOfElements达到后会加班
+        uint nTableMask;  // arBuckets数组大小，初始化为0 表示arBuckets未初始化，初始化以后是nTableSize-1    
+        uint nNumOfElements;   // 初始化为0 没插入一个元素+1，超出nTableSize时resize，rehash
+        ulong nNextFreeElement; // 0 long型key的下标，递增
+        Bucket *pInternalPointer;   // NULL 用于遍历
+        Bucket *pListHead; // null 全局链表头 每次插入最后， rehash的时候不变
+        Bucket *pListTail; // null 全局链表尾 每次插入尾部
+        Bucket **arBuckets; // &(Bucket * == NULL) 是pemallc的
+        dtor_func_t pDestructor;   //void _zval_ptr_dtor(zval *存在则处理pData的释放
+        zend_bool persistent; // 0  Bucket数组和pData指向的zval*类型的指针 是pemalloc还是emalloc
+        unsigned char nApplyCount; // 0 超过三层，会报错
+        zend_bool bApplyProtection; // 1  递归保护
+    #if ZEND_DEBUG
+        int inconsistent;
+    #endif
+    } HashTable;
+```
+
+``` c bucket defination
+    typedef struct bucket {
+        ulong h ;       // hash值，整形下标
+        uint nKeyLength ;  // arKey的长度，包括\0 0表示为整型index，此时arkey=NULL h为整型的key
+        void * pData;  // 指向保存数据的指针 直接指向pDataPtr(zval **)
+        void * pDataPtr;  // 保存的数据就是指针大小，那么指针数据直接放在这里(zval * 类型数据)
+        struct bucket *pListNext ;  // 全局链表 每次插入最后
+        struct bucket *pListLast ;   // 全局链表
+        struct bucket *pNext ;  // hash冲突链表，每次插入表头，rehash时重新计算
+        struct bucket *pLast ;
+        const char *arKey ;   // key 实际后接string或指向全局列表
+    } Bucket ;
+```
+
+## 2.3 hashtable之初始化
+
+通常，使用array\_init对zval* 进行初始化，设置size可以指定tablesize为不小于size的2的指数幂
+
+``` c hashtable init
+    #define array_init (arg)              _array_init((arg), 0 ZEND_FILE_LINE_CC)
+    #define array_init_size (arg, size) _array_init((arg), (size) ZEND_FILE_LINE_CC)
+
+    ZEND_API int _array_init(zval *arg, uint size ZEND_FILE_LINE_DC)
+    {
+        ALLOC_HASHTABLE_REL(Z_ARRVAL_P(arg)); // emalloc Hashtable
+        _zend_hash_init(Z_ARRVAL_P(arg), size, NULL, ZVAL_PTR_DTOR, 0 ZEND_FILE_LINE_RELAY_CC);
+        Z_TYPE_P(arg) = IS_ARRAY;  // 设置zval类型
+        return SUCCESS;
+    }
+
+    #define ALLOC_HASHTABLE_REL(ht) \
+        (ht) = (HashTable *) emalloc_rel(sizeof(HashTable))
+    
+    #define zend_hash_init (ht, nSize, pHashFunction, pDestructor, persistent) \
+        _zend_hash_init((ht), (nSize), (pHashFunction), (pDestructor), (persistent) ZEND_FILE_LINE_CC)
+```
+
+可见，使用array\_init初始化会进行hashtable的空间分配及初始化，并将zval类型设置为array，其中hash表结构初始化如下:
+
+
+``` c zend_hash_init
+    ZEND_API int _zend_hash_init(HashTable *ht , uint nSize, hash_func_t pHashFunction, dtor_func_t pDestructor , zend_bool persistent ZEND_FILE_LINE_DC )
+    {
+        uint i = 3;
+    
+        SET_INCONSISTENT(HT_OK );
+    
+        if ( nSize >= 0×80000000) {
+            /* prevent overflow */
+            ht ->nTableSize = 0×80000000 ;
+        } else {
+            while (( 1U << i) < nSize) {
+                i ++;
+            }
+            ht ->nTableSize = 1 << i ;
+        }
+    
+        ht ->nTableMask = 0 ;  /* 0 means that ht->arBuckets is uninitialized */
+        ht ->pDestructor = pDestructor;
+        ht ->arBuckets = ( Bucket**)&uninitialized_bucket ;
+        ht ->pListHead = NULL;
+        ht ->pListTail = NULL;
+        ht ->nNumOfElements = 0 ;
+        ht ->nNextFreeElement = 0 ;
+        ht ->pInternalPointer = NULL;
+        ht ->persistent = persistent;
+        ht ->nApplyCount = 0 ;
+        ht ->bApplyProtection = 1 ;
+        return SUCCESS ;
+    }
+```
+
+其中hashtable元素的析构函数pDestructor为一个 void (void \*)的函数指针, 这里使用的是ZVAL\_PTR\_DTOR;
+函数参数实际上为zval\*\* 类型, 内部使用时需要进行强转
+
+    #define ZVAL_PTR_DTOR ( void (*)(void *)) zval_ptr_dtor_wrapper
+    #define zval_ptr_dtor_wrapper _zval_ptr_dtor
+
+    ZEND_API void _zval_ptr_dtor(zval **zval_ptr ZEND_FILE_LINE_DC)
+    {
+    #if DEBUG_ZEND>=2
+        printf(“Reducing refcount for %x (%x): %d->%d\n”, *zval_ptr, zval_ptr, Z_REFCOUNT_PP(zval_ptr), Z_REFCOUNT_PP(zval_ptr) – 1);
+    #endif
+        Z_DELREF_PP(zval_ptr);              // zval* 指向的zval的引用计数refcount--
+        if (Z_REFCOUNT_PP(zval_ptr) == 0) { // 引用计数为0, 说明需要释放该变量
+    
+            TSRMLS_FETCH();
+            if (*zval_ptr != &EG(uninitialized_zval)) {
+                GC_REMOVE_ZVAL_FROM_BUFFER(*zval_ptr);
+                zval_dtor(*zval_ptr);    // 根据zval类型进行析构, 如果是hashtable，则调用全部成员的析构并释放hashtable的空间
+                efree_rel(*zval_ptr);    // 释放zval结构本身的空间
+            }
+        } else {
+            TSRMLS_FETCH();
+    
+            if (Z_REFCOUNT_PP(zval_ptr) == 1) {  // 引用计数到1时, 重置is_ref
+                Z_UNSET_ISREF_PP(zval_ptr);
+            }
+    
+            GC_ZVAL_CHECK_POSSIBLE_ROOT(*zval_ptr);  // array或object释放资源
+        }
+    }
+
+
+## 2.4 Hashtable之插入
+
+处理Hashtable插入操作的api如下(5.2.4增加了 char* key的const约束, 定义更加规范, 可以在zend\_API.h zend\_hash.h看到这些定义)
+    
+    #define add_assoc_long (__arg, __key, __n) add_assoc_long_ex(__arg, __key, strlen(__key)+1, __n)
+    #define add_assoc_null (__arg, __key) add_assoc_null_ex(__arg, __key, strlen(__key) + 1)
+    #define add_assoc_bool (__arg, __key, __b) add_assoc_bool_ex(__arg, __key, strlen(__key)+1, __b)
+    #define add_assoc_resource (__arg, __key, __r) add_assoc_resource_ex(__arg, __key, strlen(__key)+1, __r)
+    #define add_assoc_double (__arg, __key, __d) add_assoc_double_ex(__arg, __key, strlen(__key)+1, __d)
+    #define add_assoc_string (__arg, __key, __str, __duplicate) add_assoc_string_ex(__arg, __key, strlen(__key)+1, __str, __duplicate)
+    #define add_assoc_stringl (__arg, __key, __str, __length, __duplicate) add_assoc_stringl_ex(__arg, __key, strlen(__key)+1, __str, __length, __duplicate)
+    #define add_assoc_zval (__arg, __key, __value) add_assoc_zval_ex(__arg, __key, strlen(__key)+1, __value)
+    
+    // 类型参考这些
+    ZEND_API int add_assoc_long_ex(zval *arg , const char *key, uint key_len, long n );
+    ZEND_API int add_assoc_null_ex(zval *arg , const char *key, uint key_len);
+    ZEND_API int add_assoc_bool_ex(zval *arg , const char *key, uint key_len, int b );
+    ZEND_API int add_assoc_resource_ex(zval *arg , const char *key, uint key_len , int r);
+    ZEND_API int add_assoc_double_ex(zval *arg , const char *key, uint key_len, double d );
+    ZEND_API int add_assoc_string_ex(zval *arg , const char *key, uint key_len, char *str, int duplicate );
+    ZEND_API int add_assoc_stringl_ex(zval *arg , const char *key, uint key_len , char *str , uint length, int duplicate);
+    ZEND_API int add_assoc_zval_ex(zval *arg , const char *key, uint key_len, zval *value);
+
+上面是插入string类型key，而如果需要插入long型key的数据，可以使用这些
+
+    ZEND_API int add_index_long(zval *arg , ulong idx, long n);
+    ZEND_API int add_index_null(zval *arg , ulong idx);
+    ZEND_API int add_index_bool(zval *arg , ulong idx, int b);
+    ZEND_API int add_index_resource( zval * arg, ulong idx, int r );
+    ZEND_API int add_index_double(zval *arg , ulong idx, double d);
+    ZEND_API int add_index_string(zval *arg , ulong idx, const char * str, int duplicate);
+    ZEND_API int add_index_stringl(zval *arg , ulong idx, const char * str, uint length, int duplicate );
+    ZEND_API int add_index_zval(zval *arg , ulong index, zval *value);
+    
+    ZEND_API int add_next_index_long(zval *arg , long n);
+    ZEND_API int add_next_index_null(zval *arg );
+    ZEND_API int add_next_index_bool(zval *arg , int b);
+    ZEND_API int add_next_index_resource(zval *arg , int r);
+    ZEND_API int add_next_index_double(zval *arg , double d);
+    ZEND_API int add_next_index_string(zval *arg , const char *str, int duplicate );
+    ZEND_API int add_next_index_stringl(zval *arg , const char *str, uint length , int duplicate);
+    ZEND_API int add_next_index_zval(zval *arg , zval *value );
+
+这里，以add\_assoc\_string\_ex为例, 进一步看下在hashtable中插入数据的过程(zend\_API.h)
+
+    ZEND_API int add_assoc_string_ex(zval *arg , const char *key, uint key_len, char *str, int duplicate )
+    {
+        zval * tmp;
+    
+        MAKE_STD_ZVAL(tmp );
+        ZVAL_STRING(tmp , str, duplicate);  // 非0的话，会进行memcpy
+    
+        return zend_symtable_update (Z_ARRVAL_P( arg), key , key_len, ( void *) &tmp , sizeof (zval *), NULL);
+    }
+
+    static inline int zend_symtable_update(HashTable *ht , const char * arKey, uint nKeyLength, void *pData, uint nDataSize , void ** pDest)                         \
+    {
+        ZEND_HANDLE_NUMERIC(arKey , nKeyLength, zend_hash_index_update(ht , idx, pData, nDataSize , pDest));
+        // index update  nKeyLength包括 \0 需要是strlen+1
+        return zend_hash_update (ht, arKey, nKeyLength , pData, nDataSize, pDest);
+    }
+
+可见，void\*的pData其实是zval\*\*, ndatasize这里就是指针大小(zend_hash.h).
+如果是数字类型，这里要注意ZEND_HANDLE_NUMERIC，这个宏处理了key为数值内容的字符串时
+注意，结尾非空，有前导0，超过long11or20,且有符号long未溢出，使用zend_hash_index_update 
+
+    #define ZEND_HANDLE_NUMERIC (key, length, func) do {         \
+        ulong idx;                                               \
+        ZEND_HANDLE_NUMERIC_EX(key, length, idx, return func);   \         //注意如果是整型这里直接返回了
+    } while (0)
+
+    #define ZEND_HANDLE_NUMERIC_EX(key, length, idx, func) do {					\
+    	register const char *tmp = key;											\
+    																			\
+    	if (*tmp == '-') {														\
+    		tmp++;																\
+    	}																		\
+    	if (*tmp >= '0' && *tmp <= '9') { /* possibly a numeric index */		\
+    		const char *end = key + length - 1;									\
+    																			\
+    		if ((*end != '\0') /* not a null terminated string */				\
+    		 || (*tmp == '0' && length > 2) /* numbers with leading zeros */	\
+    		 || (end - tmp > MAX_LENGTH_OF_LONG - 1) /* number too long */		\
+    		 || (SIZEOF_LONG == 4 &&											\
+    		     end - tmp == MAX_LENGTH_OF_LONG - 1 &&							\
+    		     *tmp > '2')) { /* overflow */									\
+    			break;															\
+    		}																	\
+    		idx = (*tmp - '0');													\
+    		while (++tmp != end && *tmp >= '0' && *tmp <= '9') {				\
+    			idx = (idx * 10) + (*tmp - '0');								\
+    		}																	\
+    		if (tmp == end) {													\
+    			if (*key == '-') {												\
+    				if (idx-1 > LONG_MAX) { /* overflow */						\
+    					break;													\
+    				}															\
+    				idx = (ulong)(-(long)idx);									\
+    			} else if (idx > LONG_MAX) { /* overflow */						\
+    				break;														\
+    			}																\
+    			func;															\
+    		}																	\
+    	}																		\
+    } while (0)
+
+
+hashtable long型key的插入更新接的过程口
+
+    #define zend_hash_index_update (ht, h, pData, nDataSize, pDest) \
+        _zend_hash_index_update_or_next_insert(ht, h, pData, nDataSize, pDest, HASH_UPDATE ZEND_FILE_LINE_CC)
+
+    ZEND_API int _zend_hash_index_update_or_next_insert(HashTable *ht, ulong h, void *pData, uint nDataSize, void **pDest, int flag ZEND_FILE_LINE_DC)
+    {
+        uint nIndex;
+        Bucket *p;
+    #ifdef ZEND_SIGNALS
+        TSRMLS_FETCH();
+    #endif
+        IS_CONSISTENT(ht);
+        CHECK_INIT(ht);  // 检查bucket是否分配
+    
+        if (flag & HASH_NEXT_INSERT) {   // 对插入的情况，h为下一个
+            h = ht->nNextFreeElement;
+        }
+        nIndex = h & ht->nTableMask;  // 更新的话 h为之前string转换后的long
+    
+        p = ht->arBuckets[nIndex];
+        while (p != NULL) {   // 该bucket非空，同一个key，如果是插入则失败，此处是更新          if ((p->nKeyLength == 0) && (p->h == h)) {
+            if (flag & HASH_NEXT_INSERT || flag & HASH_ADD) {
+                return FAILURE;
+            }
+            HANDLE_BLOCK_INTERRUPTIONS();
+    #if ZEND_DEBUG
+            if (p->pData == pData) {
+                ZEND_PUTS(“Fatal error in zend_hash_index_update: p->pData == pData\n”);
+                HANDLE_UNBLOCK_INTERRUPTIONS();
+                return FAILURE;
+            }
+    #endif
+            if (ht->pDestructor) {
+                ht->pDestructor(p->pData);
+            }
+            UPDATE_DATA(ht, p, pData, nDataSize);
+            HANDLE_UNBLOCK_INTERRUPTIONS();
+            if ((long)h >= (long)ht->nNextFreeElement) { // nextfreeelement非递减，到long_max终止
+                ht->nNextFreeElement = h < LONG_MAX ? h + 1 : LONG_MAX;
+            }
+            if (pDest) {
+                *pDest = p->pData;
+            }
+            return SUCCESS;
+        }
+        p = p->pNext;
+        }
+        p = (Bucket *) pemalloc_rel(sizeof(Bucket), ht->persistent);
+        if (!p) {
+            return FAILURE;
+        }
+        p->arKey = NULL;  // 整型，keylen标记为0，h即为该数字
+        p->nKeyLength = 0; /* Numeric indices are marked by making the nKeyLength == 0 */
+        p->h = h;
+        INIT_DATA(ht, p, pData, nDataSize);
+        if (pDest) {
+            *pDest = p->pData;
+        }
+    
+        CONNECT_TO_BUCKET_DLLIST(p, ht->arBuckets[nIndex]);  // 插入bucket链表头
+    
+        HANDLE_BLOCK_INTERRUPTIONS();
+        ht->arBuckets[nIndex] = p;
+        CONNECT_TO_GLOBAL_DLLIST(p, ht);      // 插入global链表尾部
+        HANDLE_UNBLOCK_INTERRUPTIONS();
+    
+        if ((long)h >= (long)ht->nNextFreeElement) {
+            ht->nNextFreeElement = h < LONG_MAX ? h + 1 : LONG_MAX;
+        }
+        ht->nNumOfElements++;
+        ZEND_HASH_IF_FULL_DO_RESIZE(ht);
+        return SUCCESS;
+    }
+
+
+非数字类型，hashtable中add或update，由\_zend\_hash\_add\_or\_update实现
+
+    #define zend_hash_update(ht, arKey, nKeyLength, pData, nDataSize, pDest) \
+        _zend_hash_add_or_update(ht, arKey, nKeyLength, pData, nDataSize, pDest, HASH_UPDATE ZEND_FILE_LINE_CC)
+    #define zend_hash_add(ht, arKey, nKeyLength, pData, nDataSize, pDest) \
+        _zend_hash_add_or_update(ht, arKey, nKeyLength, pData, nDataSize, pDest, HASH_ADD ZEND_FILE_LINE_CC)
+
+hashtable string类型key的插入更新函数
+
+    ZEND_API int _zend_hash_add_or_update(HashTable *ht, const char *arKey, uint nKeyLength, void *pData, uint nDataSize, void **pDest, int flag ZEND_FILE_LINE_DC)
+    {
+        ulong h;
+        uint nIndex;
+        Bucket *p;
+    #ifdef ZEND_SIGNALS
+        TSRMLS_FETCH();
+    #endif
+        IS_CONSISTENT(ht);
+    
+        if (nKeyLength <= 0) {
+    #if ZEND_DEBUG
+            ZEND_PUTS(“zend_hash_update: Can’t put in empty key\n”);
+    #endif
+            return FAILURE;
+        }
+    
+        CHECK_INIT(ht);
+    
+        h = zend_inline_hash_func(arKey, nKeyLength);
+        nIndex = h & ht->nTableMask;  // hash，并确定插到哪个hashtable的bucket
+    
+        p = ht->arBuckets[nIndex];
+        while (p != NULL) {              // bucket 非空
+            if (p->arKey == arKey ||
+                    ((p->h == h) && (p->nKeyLength == nKeyLength) && !memcmp(p->arKey, arKey, nKeyLength))) {
+                if (flag & HASH_ADD) {   // add时重复返回失败
+                    return FAILURE;
+                }
+                HANDLE_BLOCK_INTERRUPTIONS();
+    #if ZEND_DEBUG
+                if (p->pData == pData) {
+                    ZEND_PUTS(“Fatal error in zend_hash_update: p->pData == pData\n”);
+                    HANDLE_UNBLOCK_INTERRUPTIONS();
+                    return FAILURE;
+                }
+    #endif
+                if (ht->pDestructor) {  // pdestructor 实际为处理zval **类型的析构函数
+                    ht->pDestructor(p->pData);
+                }
+                UPDATE_DATA(ht, p, pData, nDataSize);
+                if (pDest) {
+                    *pDest = p->pData;
+                }
+                HANDLE_UNBLOCK_INTERRUPTIONS();
+                return SUCCESS;
+            }
+            p = p->pNext;
+        }
+    
+        if (IS_INTERNED(arKey)) {
+            p = (Bucket *) pemalloc(sizeof(Bucket), ht->persistent);
+            if (!p) {
+                return FAILURE;
+            }
+            p->arKey = arKey;
+        } else {                      // 第一个节点，创建Bucket，
+            p = (Bucket *) pemalloc(sizeof(Bucket) + nKeyLength, ht->persistent);
+            if (!p) {
+                return FAILURE;
+            }
+            p->arKey = (const char*)(p + 1);
+            memcpy((char*)p->arKey, arKey, nKeyLength);  // 拷贝包括\0在内的字符串
+    
+        }
+        p->nKeyLength = nKeyLength;
+        INIT_DATA(ht, p, pData, nDataSize);   // 数据初始化见后
+        p->h = h;
+        CONNECT_TO_BUCKET_DLLIST(p, ht->arBuckets[nIndex]); // Bucket *p 插入 bucket链表头
+        if (pDest) {
+            *pDest = p->pData;
+        }
+        HANDLE_BLOCK_INTERRUPTIONS();
+        CONNECT_TO_GLOBAL_DLLIST(p, ht);
+        ht->arBuckets[nIndex] = p;
+        HANDLE_UNBLOCK_INTERRUPTIONS();
+    
+        ht->nNumOfElements++;
+        ZEND_HASH_IF_FULL_DO_RESIZE(ht);          /* If the Hash table is full, resize it */
+        return SUCCESS;
+    }
+
+检查bucket 数组是否初始化
+
+    #define CHECK_INIT (ht) do {                                                        \
+        if (UNEXPECTED((ht)->nTableMask == 0)) {                                        \
+            (ht)->arBuckets = (Bucket **) pecalloc((ht)->nTableSize, sizeof (Bucket *), (ht)->persistent);     \
+            (ht)->nTableMask = (ht)->nTableSize – 1;                             \
+        }                                                                        \
+    } while (0)
+
+1.htable bucket已存在该key 更新hashtable \*ht  Bucket\* p zval \*\*pData nDataSize sizeof( zval \*)
+
+    #define UPDATE_DATA (ht, p, pData, nDataSize)                                                         
+        if (nDataSize == sizeof(void*)) {                                                                  
+            if ((p)->pData != &(p)->pDataPtr) {    
+                pefree_rel((p)->pData, (ht)->persistent);                                             
+            }                                                                                                         
+            memcpy(&(p)->pDataPtr, pData, sizeof( void *));                                           
+            (p)->pData = &(p)->pDataPtr;                                                                    
+        } else {                                                                                                  
+            if ((p)->pData == &(p)->pDataPtr) {                                                             
+                (p)->pData = ( void *) pemalloc_rel(nDataSize, (ht)->persistent);              \
+                             (p)->pDataPtr= NULL;                                                                            
+            } else {                                                                                             
+                (p)->pData = ( void *) perealloc_rel((p)->pData, nDataSize, (ht)->persistent);   \
+                             /* (p)->pDataPtr is already NULL so no need to initialize it */                     
+            }                                                                                                         
+            memcpy((p)->pData, pData, nDataSize);                                                     
+        }
+
+2.bucket为空 添加数据pData hashtable \*ht  Bucket\* p zval \*\*pData nDataSize sizeof( zval \*)
+
+    #define INIT_DATA (ht, p, pData, nDataSize);                                          \
+            if (nDataSize == sizeof(void*)) {                                              \
+                memcpy(&(p)->pDataPtr, pData, sizeof(void *)); // 拷贝zval*到pDataPtr            \
+                (p)->pData = &(p)->pDataPtr;                                               \
+            } else {                                                                             \
+                (p)->pData = ( void *) pemalloc_rel(nDataSize, (ht)->persistent);\
+                if (!(p)->pData) {                                                              \
+                    pefree_rel(p, (ht)->persistent);                                      \
+                    return FAILURE;                                                           \
+                }                                                                                    \
+                memcpy((p)->pData, pData, nDataSize);                                \
+                (p)->pDataPtr= NULL;                                                             \
+            }
+        更新该bucket的链表插入表头  和全局链表插入表尾
+    #define CONNECT_TO_BUCKET_DLLIST (element, list_head)      \
+            (element)->pNext = (list_head);       // 插入到队头                  \
+        ( element)->pLast = NULL;                                        \
+        if ((element)->pNext) {                                              \
+            (element)->pNext->pLast = (element);                 \
+        }
+    
+    #define CONNECT_TO_GLOBAL_DLLIST (element, ht)                  \
+            (element)->pListLast = (ht)->pListTail;                         \
+        (ht)->pListTail = (element);                                    \
+        (element)->pListNext = NULL;                                    \
+        if ((element)->pListLast != NULL) {                             \
+            (element)->pListLast->pListNext = (element);         \
+        }                                                                         \
+        if (!(ht)->pListHead) {                                              \
+            (ht)->pListHead = (element);                               \
+        }                                                                         \
+        if ((ht)->pInternalPointer == NULL) {                           \
+            (ht)->pInternalPointer = (element);                        \
+        }
+        判断是否需要rehash  元素数目大于hash的bucket数目时触发
+    #define ZEND_HASH_IF_FULL_DO_RESIZE (ht)                   \
+            if ((ht)->nNumOfElements > (ht)->nTableSize) {  \
+                zend_hash_do_resize(ht);                        \
+            }
+    static int zend_hash_do_resize(HashTable *ht)
+    {
+        Bucket **t;
+    #ifdef ZEND_SIGNALS
+        TSRMLS_FETCH();
+    #endif
+        IS_CONSISTENT(ht);
+    
+        if ((ht->nTableSize << 1) > 0) {     /* Let’s double the table size */
+            t = (Bucket **) perealloc_recoverable(ht->arBuckets, (ht->nTableSize << 1) * sizeof(Bucket *), ht->persistent);
+            if (t) {
+                HANDLE_BLOCK_INTERRUPTIONS();
+                ht->arBuckets = t;
+                ht->nTableSize = (ht->nTableSize << 1);
+                ht->nTableMask = ht->nTableSize – 1;
+                zend_hash_rehash(ht);
+                HANDLE_UNBLOCK_INTERRUPTIONS();
+                return SUCCESS;
+            }
+            return FAILURE;
+        }
+        return SUCCESS;
+    }
+ 
+    
+    ZEND_API int zend_hash_rehash(HashTable *ht )
+    {
+        Bucket * p;
+        uint nIndex;
+    
+        IS_CONSISTENT(ht );
+        if ( UNEXPECTED(ht ->nNumOfElements == 0 )) {
+            return SUCCESS ;
+        }
+    
+        memset(ht ->arBuckets, 0, ht->nTableSize * sizeof(Bucket *));
+        p = ht-> pListHead;  // 根据全局链表依次rehash，hash值保存在p->h rehash只需要重新&mask
+        while ( p != NULL) {
+            nIndex = p-> h & ht->nTableMask ;
+            CONNECT_TO_BUCKET_DLLIST(p , ht-> arBuckets[nIndex ]);  // 重建全局链表
+            ht ->arBuckets[ nIndex] = p;
+            p = p-> pListNext;
+        }
+        return SUCCESS ;
+    }
+ 
+## 2.5 Hashtable之查找
+
+查找string类型的arKey，数字类型的string是查不到的
+
+    ZEND_API int zend_hash_find(const HashTable *ht, const char *arKey, uint nKeyLength , void **pData );
+
+查找string类型的arKey nkeyleng为0则为整型，否则为string类型的整型，hash值为h
+
+    ZEND_API int zend_hash_quick_find(const HashTable *ht, const char * arKey, uint nKeyLength, ulong h , void **pData );
+
+查找整型h指定的data
+
+    ZEND_API int zend_hash_index_find(const HashTable *ht, ulong h, void **pData );
+
+hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&（zval **） 返回zval **的p->pData
+
+    /* Returns SUCCESS if found and FAILURE if not
+       ZEND_API int zend_hash_find(const HashTable *ht, const char *arKey, uint nKeyLength , void **pData )
+       {
+       ulong h;
+       uint nIndex;
+       Bucket * p;
+    
+       IS_CONSISTENT(ht );
+    
+       h = zend_inline_hash_func (arKey, nKeyLength);
+       nIndex = h & ht->nTableMask ;
+    
+       p = ht-> arBuckets[nIndex ];
+       while ( p != NULL) {
+       if ( p->arKey == arKey ||
+       ((p-> h == h) && ( p->nKeyLength == nKeyLength ) && !memcmp( p->arKey , arKey, nKeyLength))) {
+     *pData = p->pData ;
+     return SUCCESS ;
+     }
+     p = p-> pNext;
+     }
+     return FAILURE ;
+     }
+
+## 2.6 Hashtable之遍历
+
+    #define zend_hash_internal_pointer_reset (ht) \
+    
+    zend_hash_internal_pointer_reset_ex(ht, NULL)
+    
+    #define zend_hash_has_more_elements (ht) \
+    zend_hash_has_more_elements_ex(ht, NULL)
+    
+    #define zend_hash_move_forward (ht) \
+    zend_hash_move_forward_ex(ht, NULL)
+    
+    #define zend_hash_move_backwards (ht) \
+    zend_hash_move_backwards_ex(ht, NULL)
+    
+    #define zend_hash_get_current_key (ht, str_index, num_index, duplicate) \
+    zend_hash_get_current_key_ex(ht, str_index, NULL, num_index, duplicate, NULL)
+    
+    #define zend_hash_get_current_key_type (ht) \
+    zend_hash_get_current_key_type_ex(ht, NULL)
+    
+    #define zend_hash_get_current_data (ht, pData) \
+    zend_hash_get_current_data_ex(ht, pData, NULL)
+    
+    #define zend_hash_internal_pointer_end(ht) \
+    zend_hash_internal_pointer_end_ex(ht, NULL)
+    
+    #define zend_hash_update_current_key (ht, key_type, str_index, str_length, num_index) \
+    zend_hash_update_current_key_ex(ht, key_type, str_index, str_length, num_index, HASH_UPDATE_KEY_ANYWAY, NULL)
+    
+    #define zend_hash_has_more_elements_ex (ht, pos) \
+    (zend_hash_get_current_key_type_ex(ht, pos) == HASH_KEY_NON_EXISTANT ? FAILURE : SUCCESS)
+    ZEND_API int zend_hash_move_forward_ex(HashTable *ht , HashPosition * pos);
+    ZEND_API int zend_hash_move_backwards_ex(HashTable *ht , HashPosition * pos);
+    ZEND_API int zend_hash_get_current_key_ex(const HashTable *ht, char **str_index, uint *str_length, ulong *num_index, zend_bool duplicate, HashPosition *pos);
+    ZEND_API int zend_hash_get_current_key_type_ex(HashTable *ht, HashPosition *pos);
+    ZEND_API int zend_hash_get_current_data_ex(HashTable *ht , void ** pData, HashPosition * pos);
+    ZEND_API void zend_hash_internal_pointer_reset_ex (HashTable *ht, HashPosition *pos);
+    ZEND_API void zend_hash_internal_pointer_end_ex(HashTable *ht, HashPosition *pos);
+    ZEND_API int zend_hash_update_current_key_ex(HashTable *ht , int key_type, const char * str_index, uint str_length, ulong num_index, int mode, HashPosition * pos);
+    reset是将内部指针设为全局链表头部
+    ZEND_API void zend_hash_internal_pointer_reset_ex (HashTable *ht, HashPosition *pos)
+    {
+    IS_CONSISTENT(ht );
+    
+    if ( pos)
+     *pos = ht->pListHead ;
+     else
+    ht ->pInternalPointer = ht-> pListHead;
+    }
+
+判断下一个节点是否存在 
+
+    ZEND_API int zend_hash_get_current_key_type_ex(HashTable *ht, HashPosition *pos)
+    {
+        Bucket * p;
+    
+        p = pos ? (*pos ) : ht->pInternalPointer ;
+    
+        IS_CONSISTENT(ht );
+    
+        if ( p) {
+            if ( p->nKeyLength ) {
+                return HASH_KEY_IS_STRING ;
+            } else {
+                return HASH_KEY_IS_LONG ;
+            }
+        }
+        return HASH_KEY_NON_EXISTANT ;
+    }
+
+后移，当前已经是最后则失败
+
+    ZEND_API int zend_hash_move_forward_ex(HashTable *ht , HashPosition * pos)
+    {
+        HashPosition * current = pos ? pos : &ht ->pInternalPointer;
+    
+        IS_CONSISTENT(ht );
+    
+        if (* current) {
+            *current = (*current )->pListNext;
+            return SUCCESS ;
+        } else
+            return FAILURE ;
+    }
+
+获取当前key str\_index为 &（char \*） str\_length 为NULL index为 &(ulong) 
+
+        /* This function should be made binary safe  */
+    ZEND_API int zend_hash_get_current_key_ex(const HashTable *ht, char **str_index, uint *str_length, ulong *num_index, zend_bool duplicate, HashPosition *pos)
+    {
+        Bucket * p;
+    
+        p = pos ? (*pos ) : ht->pInternalPointer ;
+    
+        IS_CONSISTENT(ht );
+    
+        if ( p) {
+            if ( p->nKeyLength ) {
+                if ( duplicate) {
+                    *str_index = estrndup( p->arKey , p->nKeyLength - 1 );
+                } else {
+                    *str_index = (char *)p-> arKey;
+                }
+                if ( str_length) {
+                    *str_length = p->nKeyLength ;
+                }
+                return HASH_KEY_IS_STRING ;
+            } else {
+                *num_index = p->h ;
+                return HASH_KEY_IS_LONG ;
+            }
+        }
+        return HASH_KEY_NON_EXISTANT ;
+    }
+
+获取当前data  &(zval \*\*)
+
+    ZEND_API int zend_hash_get_current_data_ex(HashTable *ht , void ** pData, HashPosition * pos)
+    {
+        Bucket * p;
+    
+        p = pos ? (*pos ) : ht->pInternalPointer ;
+    
+        IS_CONSISTENT(ht );
+    
+        if ( p) {
+            *pData = p->pData ;
+            return SUCCESS ;
+        } else {
+            return FAILURE ;
+        }
+    }
+
+示例
+
+    for(zend_hash_internal_pointer_reset(Z_ARRVAL_P(request));
+            SUCCESS == zend_hash_has_more_elements(Z_ARRVAL_P(request));
+            zend_hash_move_forward(Z_ARRVAL_P(request)))
+    {
+        if(HASH_KEY_IS_STRING != zend_hash_get_current_key(Z_ARRVAL_P(request), &key , &index, 1)){
+        }
+        if(FAILURE == zend_hash_get_current_data(Z_ARRVAL_P(request), (void**)&param)){
+        }
+    
+    }
+
+*本文地址: <a href=http://www.vneptune.com/blog/2013/04/22/php-array/> http://www.vneptune.com/blog/2013/04/22/php-array/</a>*
+
+*作者: vneptune*
+
+*转载请注明出处*

@@ -38,7 +38,10 @@ THE SOFTWARE IS PROVIDED ‘AS IS’, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 - Add your site to the Wiki so we can watch the community grow.
 
 #### Useage
-执行rake new_post["my first blog"]，这样会在octopress的/source/_post下生成一个markdown文件，可以用文本软件进行编辑
-完成编辑后执行rake generate，生成。
-执行rake preview地，可以在浏览器内以这个地址进行预览。
-最后执行rake deploy，将日志提交到github上
+master在_deploy下,html在blog下
+
+其它是source
+执行rake new\_post["my first blog"]，在source/\_post下生成markdown文件
+编辑后执行rake generate生成html
+rake preview可以在浏览器内预览
+最后执行rake deploy，将master提交到github上
