@@ -39,9 +39,11 @@ THE SOFTWARE IS PROVIDED ‘AS IS’, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 #### Useage
 master在_deploy下,html在blog下
-
 其它是source
+
 执行rake new\_post["my first blog"]，在source/\_post下生成markdown文件
 编辑后执行rake generate生成html
 rake preview可以在浏览器内预览
+
 最后执行rake deploy，将master提交到github上
+
