@@ -3,7 +3,7 @@ layout: post
 title: "把博客迁到github"
 date: 2013-03-27 01:40
 comments: true
-categories: "other"
+categories: ""
 ---
 
 今天把blog的域名迁到github :)
