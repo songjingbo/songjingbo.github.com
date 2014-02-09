@@ -4,7 +4,7 @@
   <title><![CDATA[Vneptune's paper]]></title>
   <link href="http://songjingbo.github.com/atom.xml" rel="self"/>
   <link href="http://songjingbo.github.com/"/>
-  <updated>2014-02-10T00:00:43+08:00</updated>
+  <updated>2014-02-10T00:53:13+08:00</updated>
   <id>http://songjingbo.github.com/</id>
   <author>
     <name><![CDATA[vneptune]]></name>
@@ -880,295 +880,584 @@
 </span></code></pre></td></tr></table></div></figure>
 
 <p>检查bucket 数组是否初始化</p>
-<div class="highlight"><pre><code class="text">#define CHECK_INIT (ht) do {                                                        \
-    if (UNEXPECTED((ht)-&gt;nTableMask == 0)) {                                        \
-        (ht)-&gt;arBuckets = (Bucket **) pecalloc((ht)-&gt;nTableSize, sizeof (Bucket *), (ht)-&gt;persistent);     \
-        (ht)-&gt;nTableMask = (ht)-&gt;nTableSize – 1;                             \
-    }                                                                        \
-} while (0)
-</code></pre></div>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#define CHECK_INIT (ht) do {                                                        \</span>
+</span><span class='line'><span class="cp">    if (UNEXPECTED((ht)-&gt;nTableMask == 0)) {                                        \</span>
+</span><span class='line'><span class="cp">        (ht)-&gt;arBuckets = (Bucket **) pecalloc((ht)-&gt;nTableSize, sizeof (Bucket *), (ht)-&gt;persistent);     \</span>
+</span><span class='line'><span class="cp">        (ht)-&gt;nTableMask = (ht)-&gt;nTableSize – 1;                             \</span>
+</span><span class='line'><span class="cp">    }                                                                        \</span>
+</span><span class='line'><span class="cp">} while (0)</span>
+</span></code></pre></td></tr></table></div></figure>
+
 <p>1.htable bucket已存在该key 更新hashtable *ht  Bucket* p zval **pData nDataSize sizeof( zval *)</p>
-<div class="highlight"><pre><code class="text">#define UPDATE_DATA (ht, p, pData, nDataSize)                                                         
-    if (nDataSize == sizeof(void*)) {                                                                  
-        if ((p)-&gt;pData != &amp;(p)-&gt;pDataPtr) {    
-            pefree_rel((p)-&gt;pData, (ht)-&gt;persistent);                                             
-        }                                                                                                         
-        memcpy(&amp;(p)-&gt;pDataPtr, pData, sizeof( void *));                                           
-        (p)-&gt;pData = &amp;(p)-&gt;pDataPtr;                                                                    
-    } else {                                                                                                  
-        if ((p)-&gt;pData == &amp;(p)-&gt;pDataPtr) {                                                             
-            (p)-&gt;pData = ( void *) pemalloc_rel(nDataSize, (ht)-&gt;persistent);              \
-                         (p)-&gt;pDataPtr= NULL;                                                                            
-        } else {                                                                                             
-            (p)-&gt;pData = ( void *) perealloc_rel((p)-&gt;pData, nDataSize, (ht)-&gt;persistent);   \
-                         /* (p)-&gt;pDataPtr is already NULL so no need to initialize it */                     
-        }                                                                                                         
-        memcpy((p)-&gt;pData, pData, nDataSize);                                                     
-    }
-</code></pre></div>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#define UPDATE_DATA (ht, p, pData, nDataSize)                                                         </span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">nDataSize</span> <span class="o">==</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">((</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span> <span class="o">!=</span> <span class="o">&amp;</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pDataPtr</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>            <span class="n">pefree_rel</span><span class="p">((</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span><span class="p">,</span> <span class="p">(</span><span class="n">ht</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">persistent</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>        <span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pDataPtr</span><span class="p">,</span> <span class="n">pData</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span> <span class="kt">void</span> <span class="o">*</span><span class="p">));</span>
+</span><span class='line'>        <span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span> <span class="o">=</span> <span class="o">&amp;</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pDataPtr</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">((</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span> <span class="o">==</span> <span class="o">&amp;</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pDataPtr</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>            <span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span> <span class="o">=</span> <span class="p">(</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">pemalloc_rel</span><span class="p">(</span><span class="n">nDataSize</span><span class="p">,</span> <span class="p">(</span><span class="n">ht</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">persistent</span><span class="p">);</span>              \
+</span><span class='line'>                         <span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pDataPtr</span><span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>            <span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span> <span class="o">=</span> <span class="p">(</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">perealloc_rel</span><span class="p">((</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span><span class="p">,</span> <span class="n">nDataSize</span><span class="p">,</span> <span class="p">(</span><span class="n">ht</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">persistent</span><span class="p">);</span>   \
+</span><span class='line'>                         <span class="cm">/* (p)-&gt;pDataPtr is already NULL so no need to initialize it */</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>        <span class="n">memcpy</span><span class="p">((</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span><span class="p">,</span> <span class="n">pData</span><span class="p">,</span> <span class="n">nDataSize</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
 <p>2.bucket为空 添加数据pData hashtable *ht  Bucket* p zval **pData nDataSize sizeof( zval *)</p>
-<div class="highlight"><pre><code class="text">#define INIT_DATA (ht, p, pData, nDataSize);                                          \
-        if (nDataSize == sizeof(void*)) {                                              \
-            memcpy(&amp;(p)-&gt;pDataPtr, pData, sizeof(void *)); // 拷贝zval*到pDataPtr            \
-            (p)-&gt;pData = &amp;(p)-&gt;pDataPtr;                                               \
-        } else {                                                                             \
-            (p)-&gt;pData = ( void *) pemalloc_rel(nDataSize, (ht)-&gt;persistent);\
-            if (!(p)-&gt;pData) {                                                              \
-                pefree_rel(p, (ht)-&gt;persistent);                                      \
-                return FAILURE;                                                           \
-            }                                                                                    \
-            memcpy((p)-&gt;pData, pData, nDataSize);                                \
-            (p)-&gt;pDataPtr= NULL;                                                             \
-        }
-    更新该bucket的链表插入表头  和全局链表插入表尾
-#define CONNECT_TO_BUCKET_DLLIST (element, list_head)      \
-        (element)-&gt;pNext = (list_head);       // 插入到队头                  \
-    ( element)-&gt;pLast = NULL;                                        \
-    if ((element)-&gt;pNext) {                                              \
-        (element)-&gt;pNext-&gt;pLast = (element);                 \
-    }
 
-#define CONNECT_TO_GLOBAL_DLLIST (element, ht)                  \
-        (element)-&gt;pListLast = (ht)-&gt;pListTail;                         \
-    (ht)-&gt;pListTail = (element);                                    \
-    (element)-&gt;pListNext = NULL;                                    \
-    if ((element)-&gt;pListLast != NULL) {                             \
-        (element)-&gt;pListLast-&gt;pListNext = (element);         \
-    }                                                                         \
-    if (!(ht)-&gt;pListHead) {                                              \
-        (ht)-&gt;pListHead = (element);                               \
-    }                                                                         \
-    if ((ht)-&gt;pInternalPointer == NULL) {                           \
-        (ht)-&gt;pInternalPointer = (element);                        \
-    }
-    判断是否需要rehash  元素数目大于hash的bucket数目时触发
-#define ZEND_HASH_IF_FULL_DO_RESIZE (ht)                   \
-        if ((ht)-&gt;nNumOfElements &gt; (ht)-&gt;nTableSize) {  \
-            zend_hash_do_resize(ht);                        \
-        }
-static int zend_hash_do_resize(HashTable *ht)
-{
-    Bucket **t;
-#ifdef ZEND_SIGNALS
-    TSRMLS_FETCH();
-#endif
-    IS_CONSISTENT(ht);
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#define INIT_DATA (ht, p, pData, nDataSize);                                          \</span>
+</span><span class='line'><span class="cp">        if (nDataSize == sizeof(void*)) {                                              \</span>
+</span><span class='line'><span class="cp">            memcpy(&amp;(p)-&gt;pDataPtr, pData, sizeof(void *)); </span><span class="c1">// 拷贝zval*到pDataPtr            \</span>
+</span><span class='line'>            <span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span> <span class="o">=</span> <span class="o">&amp;</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pDataPtr</span><span class="p">;</span>                                               \
+</span><span class='line'>        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>                                                                             \
+</span><span class='line'>            <span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span> <span class="o">=</span> <span class="p">(</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">pemalloc_rel</span><span class="p">(</span><span class="n">nDataSize</span><span class="p">,</span> <span class="p">(</span><span class="n">ht</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">persistent</span><span class="p">);</span>\
+</span><span class='line'>            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span><span class="p">)</span> <span class="p">{</span>                                                              \
+</span><span class='line'>                <span class="n">pefree_rel</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="p">(</span><span class="n">ht</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">persistent</span><span class="p">);</span>                                      \
+</span><span class='line'>                <span class="k">return</span> <span class="n">FAILURE</span><span class="p">;</span>                                                           \
+</span><span class='line'>            <span class="p">}</span>                                                                                    \
+</span><span class='line'>            <span class="n">memcpy</span><span class="p">((</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pData</span><span class="p">,</span> <span class="n">pData</span><span class="p">,</span> <span class="n">nDataSize</span><span class="p">);</span>                                \
+</span><span class='line'>            <span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pDataPtr</span><span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>                                                             \
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="err">更新该</span><span class="n">bucket</span><span class="err">的链表插入表头</span>  <span class="err">和全局链表插入表尾</span>
+</span><span class='line'><span class="cp">#define CONNECT_TO_BUCKET_DLLIST (element, list_head)      \</span>
+</span><span class='line'><span class="cp">        (element)-&gt;pNext = (list_head);       </span><span class="c1">// 插入到队头                  \</span>
+</span><span class='line'>    <span class="p">(</span> <span class="n">element</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pLast</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>                                        \
+</span><span class='line'>    <span class="k">if</span> <span class="p">((</span><span class="n">element</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pNext</span><span class="p">)</span> <span class="p">{</span>                                              \
+</span><span class='line'>        <span class="p">(</span><span class="n">element</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">pNext</span><span class="o">-&gt;</span><span class="n">pLast</span> <span class="o">=</span> <span class="p">(</span><span class="n">element</span><span class="p">);</span>                 \
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define CONNECT_TO_GLOBAL_DLLIST (element, ht)                  \</span>
+</span><span class='line'><span class="cp">        (element)-&gt;pListLast = (ht)-&gt;pListTail;                         \</span>
+</span><span class='line'><span class="cp">    (ht)-&gt;pListTail = (element);                                    \</span>
+</span><span class='line'><span class="cp">    (element)-&gt;pListNext = NULL;                                    \</span>
+</span><span class='line'><span class="cp">    if ((element)-&gt;pListLast != NULL) {                             \</span>
+</span><span class='line'><span class="cp">        (element)-&gt;pListLast-&gt;pListNext = (element);         \</span>
+</span><span class='line'><span class="cp">    }                                                                         \</span>
+</span><span class='line'><span class="cp">    if (!(ht)-&gt;pListHead) {                                              \</span>
+</span><span class='line'><span class="cp">        (ht)-&gt;pListHead = (element);                               \</span>
+</span><span class='line'><span class="cp">    }                                                                         \</span>
+</span><span class='line'><span class="cp">    if ((ht)-&gt;pInternalPointer == NULL) {                           \</span>
+</span><span class='line'><span class="cp">        (ht)-&gt;pInternalPointer = (element);                        \</span>
+</span><span class='line'><span class="cp">    }</span>
+</span><span class='line'>    <span class="err">判断是否需要</span><span class="n">rehash</span>  <span class="err">元素数目大于</span><span class="n">hash</span><span class="err">的</span><span class="n">bucket</span><span class="err">数目时触发</span>
+</span><span class='line'><span class="cp">#define ZEND_HASH_IF_FULL_DO_RESIZE (ht)                   \</span>
+</span><span class='line'><span class="cp">        if ((ht)-&gt;nNumOfElements &gt; (ht)-&gt;nTableSize) {  \</span>
+</span><span class='line'><span class="cp">            zend_hash_do_resize(ht);                        \</span>
+</span><span class='line'><span class="cp">        }</span>
+</span><span class='line'><span class="k">static</span> <span class="kt">int</span> <span class="n">zend_hash_do_resize</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="n">Bucket</span> <span class="o">**</span><span class="n">t</span><span class="p">;</span>
+</span><span class='line'><span class="cp">#ifdef ZEND_SIGNALS</span>
+</span><span class='line'>    <span class="n">TSRMLS_FETCH</span><span class="p">();</span>
+</span><span class='line'><span class="cp">#endif</span>
+</span><span class='line'>    <span class="n">IS_CONSISTENT</span><span class="p">(</span><span class="n">ht</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">((</span><span class="n">ht</span><span class="o">-&gt;</span><span class="n">nTableSize</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>     <span class="cm">/* Let’s double the table size */</span>
+</span><span class='line'>        <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">Bucket</span> <span class="o">**</span><span class="p">)</span> <span class="n">perealloc_recoverable</span><span class="p">(</span><span class="n">ht</span><span class="o">-&gt;</span><span class="n">arBuckets</span><span class="p">,</span> <span class="p">(</span><span class="n">ht</span><span class="o">-&gt;</span><span class="n">nTableSize</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Bucket</span> <span class="o">*</span><span class="p">),</span> <span class="n">ht</span><span class="o">-&gt;</span><span class="n">persistent</span><span class="p">);</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>            <span class="n">HANDLE_BLOCK_INTERRUPTIONS</span><span class="p">();</span>
+</span><span class='line'>            <span class="n">ht</span><span class="o">-&gt;</span><span class="n">arBuckets</span> <span class="o">=</span> <span class="n">t</span><span class="p">;</span>
+</span><span class='line'>            <span class="n">ht</span><span class="o">-&gt;</span><span class="n">nTableSize</span> <span class="o">=</span> <span class="p">(</span><span class="n">ht</span><span class="o">-&gt;</span><span class="n">nTableSize</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class='line'>            <span class="n">ht</span><span class="o">-&gt;</span><span class="n">nTableMask</span> <span class="o">=</span> <span class="n">ht</span><span class="o">-&gt;</span><span class="n">nTableSize</span> <span class="err">–</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'>            <span class="n">zend_hash_rehash</span><span class="p">(</span><span class="n">ht</span><span class="p">);</span>
+</span><span class='line'>            <span class="n">HANDLE_UNBLOCK_INTERRUPTIONS</span><span class="p">();</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">SUCCESS</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">FAILURE</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">SUCCESS</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="n">zend_hash_rehash</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span> <span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="n">Bucket</span> <span class="o">*</span> <span class="n">p</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">uint</span> <span class="n">nIndex</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">IS_CONSISTENT</span><span class="p">(</span><span class="n">ht</span> <span class="p">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span> <span class="n">UNEXPECTED</span><span class="p">(</span><span class="n">ht</span> <span class="o">-&gt;</span><span class="n">nNumOfElements</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">SUCCESS</span> <span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">memset</span><span class="p">(</span><span class="n">ht</span> <span class="o">-&gt;</span><span class="n">arBuckets</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ht</span><span class="o">-&gt;</span><span class="n">nTableSize</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Bucket</span> <span class="o">*</span><span class="p">));</span>
+</span><span class='line'>    <span class="n">p</span> <span class="o">=</span> <span class="n">ht</span><span class="o">-&gt;</span> <span class="n">pListHead</span><span class="p">;</span>  <span class="c1">// 根据全局链表依次rehash，hash值保存在p-&gt;h rehash只需要重新&amp;mask</span>
+</span><span class='line'>    <span class="k">while</span> <span class="p">(</span> <span class="n">p</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">nIndex</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span> <span class="n">h</span> <span class="o">&amp;</span> <span class="n">ht</span><span class="o">-&gt;</span><span class="n">nTableMask</span> <span class="p">;</span>
+</span><span class='line'>        <span class="n">CONNECT_TO_BUCKET_DLLIST</span><span class="p">(</span><span class="n">p</span> <span class="p">,</span> <span class="n">ht</span><span class="o">-&gt;</span> <span class="n">arBuckets</span><span class="p">[</span><span class="n">nIndex</span> <span class="p">]);</span>  <span class="c1">// 重建全局链表</span>
+</span><span class='line'>        <span class="n">ht</span> <span class="o">-&gt;</span><span class="n">arBuckets</span><span class="p">[</span> <span class="n">nIndex</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span>
+</span><span class='line'>        <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span> <span class="n">pListNext</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">SUCCESS</span> <span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+ 
 
-    if ((ht-&gt;nTableSize &lt;&lt; 1) &gt; 0) {     /* Let’s double the table size */
-        t = (Bucket **) perealloc_recoverable(ht-&gt;arBuckets, (ht-&gt;nTableSize &lt;&lt; 1) * sizeof(Bucket *), ht-&gt;persistent);
-        if (t) {
-            HANDLE_BLOCK_INTERRUPTIONS();
-            ht-&gt;arBuckets = t;
-            ht-&gt;nTableSize = (ht-&gt;nTableSize &lt;&lt; 1);
-            ht-&gt;nTableMask = ht-&gt;nTableSize – 1;
-            zend_hash_rehash(ht);
-            HANDLE_UNBLOCK_INTERRUPTIONS();
-            return SUCCESS;
-        }
-        return FAILURE;
-    }
-    return SUCCESS;
-}
-
-
-ZEND_API int zend_hash_rehash(HashTable *ht )
-{
-    Bucket * p;
-    uint nIndex;
-
-    IS_CONSISTENT(ht );
-    if ( UNEXPECTED(ht -&gt;nNumOfElements == 0 )) {
-        return SUCCESS ;
-    }
-
-    memset(ht -&gt;arBuckets, 0, ht-&gt;nTableSize * sizeof(Bucket *));
-    p = ht-&gt; pListHead;  // 根据全局链表依次rehash，hash值保存在p-&gt;h rehash只需要重新&amp;mask
-    while ( p != NULL) {
-        nIndex = p-&gt; h &amp; ht-&gt;nTableMask ;
-        CONNECT_TO_BUCKET_DLLIST(p , ht-&gt; arBuckets[nIndex ]);  // 重建全局链表
-        ht -&gt;arBuckets[ nIndex] = p;
-        p = p-&gt; pListNext;
-    }
-    return SUCCESS ;
-}
-</code></pre></div>
 <h2 id="toc_5">2.5 Hashtable之查找</h2>
 
 <p>查找string类型的arKey，数字类型的string是查不到的</p>
-<div class="highlight"><pre><code class="text">ZEND_API int zend_hash_find(const HashTable *ht, const char *arKey, uint nKeyLength , void **pData );
-</code></pre></div>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_find</span><span class="p">(</span><span class="k">const</span> <span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">arKey</span><span class="p">,</span> <span class="n">uint</span> <span class="n">nKeyLength</span> <span class="p">,</span> <span class="kt">void</span> <span class="o">**</span><span class="n">pData</span> <span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
 <p>查找string类型的arKey nkeyleng为0则为整型，否则为string类型的整型，hash值为h</p>
-<div class="highlight"><pre><code class="text">ZEND_API int zend_hash_quick_find(const HashTable *ht, const char * arKey, uint nKeyLength, ulong h , void **pData );
-</code></pre></div>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_quick_find</span><span class="p">(</span><span class="k">const</span> <span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">arKey</span><span class="p">,</span> <span class="n">uint</span> <span class="n">nKeyLength</span><span class="p">,</span> <span class="n">ulong</span> <span class="n">h</span> <span class="p">,</span> <span class="kt">void</span> <span class="o">**</span><span class="n">pData</span> <span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
 <p>查找整型h指定的data</p>
-<div class="highlight"><pre><code class="text">ZEND_API int zend_hash_index_find(const HashTable *ht, ulong h, void **pData );
-</code></pre></div>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_index_find</span><span class="p">(</span><span class="k">const</span> <span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="n">ulong</span> <span class="n">h</span><span class="p">,</span> <span class="kt">void</span> <span class="o">**</span><span class="n">pData</span> <span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
 <p>hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&amp;（zval **） 返回zval **的p-&gt;pData</p>
-<div class="highlight"><pre><code class="text">/* Returns SUCCESS if found and FAILURE if not
-   ZEND_API int zend_hash_find(const HashTable *ht, const char *arKey, uint nKeyLength , void **pData )
-   {
-   ulong h;
-   uint nIndex;
-   Bucket * p;
 
-   IS_CONSISTENT(ht );
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="o">/*</span> <span class="n">Returns</span> <span class="n">SUCCESS</span> <span class="k">if</span> <span class="n">found</span> <span class="n">and</span> <span class="n">FAILURE</span> <span class="k">if</span> <span class="n">not</span>
+</span><span class='line'>   <span class="n">ZEND_API</span> <span class="kt">int</span> <span class="n">zend_hash_find</span><span class="p">(</span><span class="k">const</span> <span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">arKey</span><span class="p">,</span> <span class="n">uint</span> <span class="n">nKeyLength</span> <span class="p">,</span> <span class="kt">void</span> <span class="o">**</span><span class="n">pData</span> <span class="p">)</span>
+</span><span class='line'>   <span class="p">{</span>
+</span><span class='line'>   <span class="n">ulong</span> <span class="n">h</span><span class="p">;</span>
+</span><span class='line'>   <span class="n">uint</span> <span class="n">nIndex</span><span class="p">;</span>
+</span><span class='line'>   <span class="n">Bucket</span> <span class="o">*</span> <span class="n">p</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="n">IS_CONSISTENT</span><span class="p">(</span><span class="n">ht</span> <span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="n">h</span> <span class="o">=</span> <span class="n">zend_inline_hash_func</span> <span class="p">(</span><span class="n">arKey</span><span class="p">,</span> <span class="n">nKeyLength</span><span class="p">);</span>
+</span><span class='line'>   <span class="n">nIndex</span> <span class="o">=</span> <span class="n">h</span> <span class="o">&amp;</span> <span class="n">ht</span><span class="o">-&gt;</span><span class="n">nTableMask</span> <span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="n">p</span> <span class="o">=</span> <span class="n">ht</span><span class="o">-&gt;</span> <span class="n">arBuckets</span><span class="p">[</span><span class="n">nIndex</span> <span class="p">];</span>
+</span><span class='line'>   <span class="k">while</span> <span class="p">(</span> <span class="n">p</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>   <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">arKey</span> <span class="o">==</span> <span class="n">arKey</span> <span class="o">||</span>
+</span><span class='line'>   <span class="p">((</span><span class="n">p</span><span class="o">-&gt;</span> <span class="n">h</span> <span class="o">==</span> <span class="n">h</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">nKeyLength</span> <span class="o">==</span> <span class="n">nKeyLength</span> <span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">memcmp</span><span class="p">(</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">arKey</span> <span class="p">,</span> <span class="n">arKey</span><span class="p">,</span> <span class="n">nKeyLength</span><span class="p">)))</span> <span class="p">{</span>
+</span><span class='line'> <span class="o">*</span><span class="n">pData</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">pData</span> <span class="p">;</span>
+</span><span class='line'> <span class="k">return</span> <span class="n">SUCCESS</span> <span class="p">;</span>
+</span><span class='line'> <span class="p">}</span>
+</span><span class='line'> <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span> <span class="n">pNext</span><span class="p">;</span>
+</span><span class='line'> <span class="p">}</span>
+</span><span class='line'> <span class="k">return</span> <span class="n">FAILURE</span> <span class="p">;</span>
+</span><span class='line'> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
-   h = zend_inline_hash_func (arKey, nKeyLength);
-   nIndex = h &amp; ht-&gt;nTableMask ;
-
-   p = ht-&gt; arBuckets[nIndex ];
-   while ( p != NULL) {
-   if ( p-&gt;arKey == arKey ||
-   ((p-&gt; h == h) &amp;&amp; ( p-&gt;nKeyLength == nKeyLength ) &amp;&amp; !memcmp( p-&gt;arKey , arKey, nKeyLength))) {
- *pData = p-&gt;pData ;
- return SUCCESS ;
- }
- p = p-&gt; pNext;
- }
- return FAILURE ;
- }
-</code></pre></div>
 <h2 id="toc_6">2.6 Hashtable之遍历</h2>
-<div class="highlight"><pre><code class="text">#define zend_hash_internal_pointer_reset (ht) \
 
-zend_hash_internal_pointer_reset_ex(ht, NULL)
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#define zend_hash_internal_pointer_reset (ht) \</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">zend_hash_internal_pointer_reset_ex</span><span class="p">(</span><span class="n">ht</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define zend_hash_has_more_elements (ht) \</span>
+</span><span class='line'><span class="cp">zend_hash_has_more_elements_ex(ht, NULL)</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define zend_hash_move_forward (ht) \</span>
+</span><span class='line'><span class="cp">zend_hash_move_forward_ex(ht, NULL)</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define zend_hash_move_backwards (ht) \</span>
+</span><span class='line'><span class="cp">zend_hash_move_backwards_ex(ht, NULL)</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define zend_hash_get_current_key (ht, str_index, num_index, duplicate) \</span>
+</span><span class='line'><span class="cp">zend_hash_get_current_key_ex(ht, str_index, NULL, num_index, duplicate, NULL)</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define zend_hash_get_current_key_type (ht) \</span>
+</span><span class='line'><span class="cp">zend_hash_get_current_key_type_ex(ht, NULL)</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define zend_hash_get_current_data (ht, pData) \</span>
+</span><span class='line'><span class="cp">zend_hash_get_current_data_ex(ht, pData, NULL)</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define zend_hash_internal_pointer_end(ht) \</span>
+</span><span class='line'><span class="cp">zend_hash_internal_pointer_end_ex(ht, NULL)</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define zend_hash_update_current_key (ht, key_type, str_index, str_length, num_index) \</span>
+</span><span class='line'><span class="cp">zend_hash_update_current_key_ex(ht, key_type, str_index, str_length, num_index, HASH_UPDATE_KEY_ANYWAY, NULL)</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define zend_hash_has_more_elements_ex (ht, pos) \</span>
+</span><span class='line'><span class="cp">(zend_hash_get_current_key_type_ex(ht, pos) == HASH_KEY_NON_EXISTANT ? FAILURE : SUCCESS)</span>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="n">zend_hash_move_forward_ex</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span> <span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span> <span class="n">pos</span><span class="p">);</span>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_move_backwards_ex</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span> <span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span> <span class="n">pos</span><span class="p">);</span>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_get_current_key_ex</span><span class="p">(</span><span class="k">const</span> <span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">str_index</span><span class="p">,</span> <span class="n">uint</span> <span class="o">*</span><span class="n">str_length</span><span class="p">,</span> <span class="n">ulong</span> <span class="o">*</span><span class="n">num_index</span><span class="p">,</span> <span class="n">zend_bool</span> <span class="n">duplicate</span><span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span><span class="n">pos</span><span class="p">);</span>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_get_current_key_type_ex</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span><span class="n">pos</span><span class="p">);</span>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_get_current_data_ex</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span> <span class="p">,</span> <span class="kt">void</span> <span class="o">**</span> <span class="n">pData</span><span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span> <span class="n">pos</span><span class="p">);</span>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">void</span> <span class="nf">zend_hash_internal_pointer_reset_ex</span> <span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span><span class="n">pos</span><span class="p">);</span>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">void</span> <span class="nf">zend_hash_internal_pointer_end_ex</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span><span class="n">pos</span><span class="p">);</span>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_update_current_key_ex</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span> <span class="p">,</span> <span class="kt">int</span> <span class="n">key_type</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">str_index</span><span class="p">,</span> <span class="n">uint</span> <span class="n">str_length</span><span class="p">,</span> <span class="n">ulong</span> <span class="n">num_index</span><span class="p">,</span> <span class="kt">int</span> <span class="n">mode</span><span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span> <span class="n">pos</span><span class="p">);</span>
+</span><span class='line'><span class="n">reset</span><span class="err">是将内部指针设为全局链表头部</span>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">void</span> <span class="n">zend_hash_internal_pointer_reset_ex</span> <span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span><span class="n">pos</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="n">IS_CONSISTENT</span><span class="p">(</span><span class="n">ht</span> <span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="p">(</span> <span class="n">pos</span><span class="p">)</span>
+</span><span class='line'> <span class="o">*</span><span class="n">pos</span> <span class="o">=</span> <span class="n">ht</span><span class="o">-&gt;</span><span class="n">pListHead</span> <span class="p">;</span>
+</span><span class='line'> <span class="k">else</span>
+</span><span class='line'><span class="n">ht</span> <span class="o">-&gt;</span><span class="n">pInternalPointer</span> <span class="o">=</span> <span class="n">ht</span><span class="o">-&gt;</span> <span class="n">pListHead</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
-#define zend_hash_has_more_elements (ht) \
-zend_hash_has_more_elements_ex(ht, NULL)
-
-#define zend_hash_move_forward (ht) \
-zend_hash_move_forward_ex(ht, NULL)
-
-#define zend_hash_move_backwards (ht) \
-zend_hash_move_backwards_ex(ht, NULL)
-
-#define zend_hash_get_current_key (ht, str_index, num_index, duplicate) \
-zend_hash_get_current_key_ex(ht, str_index, NULL, num_index, duplicate, NULL)
-
-#define zend_hash_get_current_key_type (ht) \
-zend_hash_get_current_key_type_ex(ht, NULL)
-
-#define zend_hash_get_current_data (ht, pData) \
-zend_hash_get_current_data_ex(ht, pData, NULL)
-
-#define zend_hash_internal_pointer_end(ht) \
-zend_hash_internal_pointer_end_ex(ht, NULL)
-
-#define zend_hash_update_current_key (ht, key_type, str_index, str_length, num_index) \
-zend_hash_update_current_key_ex(ht, key_type, str_index, str_length, num_index, HASH_UPDATE_KEY_ANYWAY, NULL)
-
-#define zend_hash_has_more_elements_ex (ht, pos) \
-(zend_hash_get_current_key_type_ex(ht, pos) == HASH_KEY_NON_EXISTANT ? FAILURE : SUCCESS)
-ZEND_API int zend_hash_move_forward_ex(HashTable *ht , HashPosition * pos);
-ZEND_API int zend_hash_move_backwards_ex(HashTable *ht , HashPosition * pos);
-ZEND_API int zend_hash_get_current_key_ex(const HashTable *ht, char **str_index, uint *str_length, ulong *num_index, zend_bool duplicate, HashPosition *pos);
-ZEND_API int zend_hash_get_current_key_type_ex(HashTable *ht, HashPosition *pos);
-ZEND_API int zend_hash_get_current_data_ex(HashTable *ht , void ** pData, HashPosition * pos);
-ZEND_API void zend_hash_internal_pointer_reset_ex (HashTable *ht, HashPosition *pos);
-ZEND_API void zend_hash_internal_pointer_end_ex(HashTable *ht, HashPosition *pos);
-ZEND_API int zend_hash_update_current_key_ex(HashTable *ht , int key_type, const char * str_index, uint str_length, ulong num_index, int mode, HashPosition * pos);
-reset是将内部指针设为全局链表头部
-ZEND_API void zend_hash_internal_pointer_reset_ex (HashTable *ht, HashPosition *pos)
-{
-IS_CONSISTENT(ht );
-
-if ( pos)
- *pos = ht-&gt;pListHead ;
- else
-ht -&gt;pInternalPointer = ht-&gt; pListHead;
-}
-</code></pre></div>
 <p>判断下一个节点是否存在 </p>
-<div class="highlight"><pre><code class="text">ZEND_API int zend_hash_get_current_key_type_ex(HashTable *ht, HashPosition *pos)
-{
-    Bucket * p;
 
-    p = pos ? (*pos ) : ht-&gt;pInternalPointer ;
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_get_current_key_type_ex</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span><span class="n">pos</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="n">Bucket</span> <span class="o">*</span> <span class="n">p</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">p</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">?</span> <span class="p">(</span><span class="o">*</span><span class="n">pos</span> <span class="p">)</span> <span class="o">:</span> <span class="n">ht</span><span class="o">-&gt;</span><span class="n">pInternalPointer</span> <span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">IS_CONSISTENT</span><span class="p">(</span><span class="n">ht</span> <span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">nKeyLength</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">HASH_KEY_IS_STRING</span> <span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">HASH_KEY_IS_LONG</span> <span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">HASH_KEY_NON_EXISTANT</span> <span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
-    IS_CONSISTENT(ht );
-
-    if ( p) {
-        if ( p-&gt;nKeyLength ) {
-            return HASH_KEY_IS_STRING ;
-        } else {
-            return HASH_KEY_IS_LONG ;
-        }
-    }
-    return HASH_KEY_NON_EXISTANT ;
-}
-</code></pre></div>
 <p>后移，当前已经是最后则失败</p>
-<div class="highlight"><pre><code class="text">ZEND_API int zend_hash_move_forward_ex(HashTable *ht , HashPosition * pos)
-{
-    HashPosition * current = pos ? pos : &amp;ht -&gt;pInternalPointer;
 
-    IS_CONSISTENT(ht );
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_move_forward_ex</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span> <span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span> <span class="n">pos</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="n">HashPosition</span> <span class="o">*</span> <span class="n">current</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">?</span> <span class="n">pos</span> <span class="o">:</span> <span class="o">&amp;</span><span class="n">ht</span> <span class="o">-&gt;</span><span class="n">pInternalPointer</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">IS_CONSISTENT</span><span class="p">(</span><span class="n">ht</span> <span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">*</span> <span class="n">current</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="o">*</span><span class="n">current</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">current</span> <span class="p">)</span><span class="o">-&gt;</span><span class="n">pListNext</span><span class="p">;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">SUCCESS</span> <span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">FAILURE</span> <span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
-    if (* current) {
-        *current = (*current )-&gt;pListNext;
-        return SUCCESS ;
-    } else
-        return FAILURE ;
-}
-</code></pre></div>
 <p>获取当前key str_index为 &amp;（char *） str_length 为NULL index为 &amp;(ulong) </p>
-<div class="highlight"><pre><code class="text">    /* This function should be made binary safe  */
-ZEND_API int zend_hash_get_current_key_ex(const HashTable *ht, char **str_index, uint *str_length, ulong *num_index, zend_bool duplicate, HashPosition *pos)
-{
-    Bucket * p;
 
-    p = pos ? (*pos ) : ht-&gt;pInternalPointer ;
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'>    <span class="cm">/* This function should be made binary safe  */</span>
+</span><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_get_current_key_ex</span><span class="p">(</span><span class="k">const</span> <span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">str_index</span><span class="p">,</span> <span class="n">uint</span> <span class="o">*</span><span class="n">str_length</span><span class="p">,</span> <span class="n">ulong</span> <span class="o">*</span><span class="n">num_index</span><span class="p">,</span> <span class="n">zend_bool</span> <span class="n">duplicate</span><span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span><span class="n">pos</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="n">Bucket</span> <span class="o">*</span> <span class="n">p</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">p</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">?</span> <span class="p">(</span><span class="o">*</span><span class="n">pos</span> <span class="p">)</span> <span class="o">:</span> <span class="n">ht</span><span class="o">-&gt;</span><span class="n">pInternalPointer</span> <span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">IS_CONSISTENT</span><span class="p">(</span><span class="n">ht</span> <span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">nKeyLength</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">if</span> <span class="p">(</span> <span class="n">duplicate</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                <span class="o">*</span><span class="n">str_index</span> <span class="o">=</span> <span class="n">estrndup</span><span class="p">(</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">arKey</span> <span class="p">,</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">nKeyLength</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">);</span>
+</span><span class='line'>            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>                <span class="o">*</span><span class="n">str_index</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">p</span><span class="o">-&gt;</span> <span class="n">arKey</span><span class="p">;</span>
+</span><span class='line'>            <span class="p">}</span>
+</span><span class='line'>            <span class="k">if</span> <span class="p">(</span> <span class="n">str_length</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                <span class="o">*</span><span class="n">str_length</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">nKeyLength</span> <span class="p">;</span>
+</span><span class='line'>            <span class="p">}</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">HASH_KEY_IS_STRING</span> <span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>            <span class="o">*</span><span class="n">num_index</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">h</span> <span class="p">;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">HASH_KEY_IS_LONG</span> <span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">HASH_KEY_NON_EXISTANT</span> <span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
-    IS_CONSISTENT(ht );
-
-    if ( p) {
-        if ( p-&gt;nKeyLength ) {
-            if ( duplicate) {
-                *str_index = estrndup( p-&gt;arKey , p-&gt;nKeyLength - 1 );
-            } else {
-                *str_index = (char *)p-&gt; arKey;
-            }
-            if ( str_length) {
-                *str_length = p-&gt;nKeyLength ;
-            }
-            return HASH_KEY_IS_STRING ;
-        } else {
-            *num_index = p-&gt;h ;
-            return HASH_KEY_IS_LONG ;
-        }
-    }
-    return HASH_KEY_NON_EXISTANT ;
-}
-</code></pre></div>
 <p>获取当前data  &amp;(zval **)</p>
-<div class="highlight"><pre><code class="text">ZEND_API int zend_hash_get_current_data_ex(HashTable *ht , void ** pData, HashPosition * pos)
-{
-    Bucket * p;
 
-    p = pos ? (*pos ) : ht-&gt;pInternalPointer ;
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">ZEND_API</span> <span class="kt">int</span> <span class="nf">zend_hash_get_current_data_ex</span><span class="p">(</span><span class="n">HashTable</span> <span class="o">*</span><span class="n">ht</span> <span class="p">,</span> <span class="kt">void</span> <span class="o">**</span> <span class="n">pData</span><span class="p">,</span> <span class="n">HashPosition</span> <span class="o">*</span> <span class="n">pos</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="n">Bucket</span> <span class="o">*</span> <span class="n">p</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">p</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">?</span> <span class="p">(</span><span class="o">*</span><span class="n">pos</span> <span class="p">)</span> <span class="o">:</span> <span class="n">ht</span><span class="o">-&gt;</span><span class="n">pInternalPointer</span> <span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">IS_CONSISTENT</span><span class="p">(</span><span class="n">ht</span> <span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="o">*</span><span class="n">pData</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">pData</span> <span class="p">;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">SUCCESS</span> <span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">FAILURE</span> <span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
-    IS_CONSISTENT(ht );
-
-    if ( p) {
-        *pData = p-&gt;pData ;
-        return SUCCESS ;
-    } else {
-        return FAILURE ;
-    }
-}
-</code></pre></div>
 <p>示例</p>
-<div class="highlight"><pre><code class="text">for(zend_hash_internal_pointer_reset(Z_ARRVAL_P(request));
-        SUCCESS == zend_hash_has_more_elements(Z_ARRVAL_P(request));
-        zend_hash_move_forward(Z_ARRVAL_P(request)))
-{
-    if(HASH_KEY_IS_STRING != zend_hash_get_current_key(Z_ARRVAL_P(request), &amp;key , &amp;index, 1)){
-    }
-    if(FAILURE == zend_hash_get_current_data(Z_ARRVAL_P(request), (void**)&amp;param)){
-    }
 
-}
-</code></pre></div>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="k">for</span><span class="p">(</span><span class="n">zend_hash_internal_pointer_reset</span><span class="p">(</span><span class="n">Z_ARRVAL_P</span><span class="p">(</span><span class="n">request</span><span class="p">));</span>
+</span><span class='line'>        <span class="n">SUCCESS</span> <span class="o">==</span> <span class="n">zend_hash_has_more_elements</span><span class="p">(</span><span class="n">Z_ARRVAL_P</span><span class="p">(</span><span class="n">request</span><span class="p">));</span>
+</span><span class='line'>        <span class="n">zend_hash_move_forward</span><span class="p">(</span><span class="n">Z_ARRVAL_P</span><span class="p">(</span><span class="n">request</span><span class="p">)))</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="n">HASH_KEY_IS_STRING</span> <span class="o">!=</span> <span class="n">zend_hash_get_current_key</span><span class="p">(</span><span class="n">Z_ARRVAL_P</span><span class="p">(</span><span class="n">request</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">key</span> <span class="p">,</span> <span class="o">&amp;</span><span class="n">index</span><span class="p">,</span> <span class="mi">1</span><span class="p">)){</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="n">FAILURE</span> <span class="o">==</span> <span class="n">zend_hash_get_current_data</span><span class="p">(</span><span class="n">Z_ARRVAL_P</span><span class="p">(</span><span class="n">request</span><span class="p">),</span> <span class="p">(</span><span class="kt">void</span><span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="n">param</span><span class="p">)){</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
 <p><em>本文地址: <a href=http://www.vneptune.com/blog/php-array/> <a href="http://www.vneptune.com/blog/php-array/">http://www.vneptune.com/blog/php-array/</a></a></em></p>
 
 <p><em>转载请注明出处</em></p>
