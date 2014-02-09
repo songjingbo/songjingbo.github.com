@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: 
-
-Sitemap: http://songjingbo.github.com/sitemap.xml 
