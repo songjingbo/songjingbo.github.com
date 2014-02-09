@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: tool | Vneptune's paper]]></title>
+  <link href="http://songjingbo.github.com/blog/categories/tool/atom.xml" rel="self"/>
+  <link href="http://songjingbo.github.com/"/>
+  <updated>2014-02-09T23:17:45+08:00</updated>
+  <id>http://songjingbo.github.com/</id>
+  <author>
+    <name><![CDATA[vneptune]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[parallel]]></title>
+    <link href="http://songjingbo.github.com/blog/parallel/"/>
+    <updated>2014-02-08T18:34:00+08:00</updated>
+    <id>http://songjingbo.github.com/blog/parallel</id>
+    <content type="html"><![CDATA[<p>parallel</p>
+
+<p>``` c 并发执行</p>
+<div class="highlight"><pre><code class="text">parallel -j2 --linebuffer &#39;printf &quot;%s-start\n&quot; {};sleep {};printf &quot;%s-middle\n&quot; {};echo {}-end&#39; ::: 4 2 1
+</code></pre></div><div class="highlight"><pre><code class="text">*本文地址: &lt;a href=http://www.vneptune.com/blog/parallel/&gt; http://www.vneptune.com/blog/parallel/&lt;/a&gt;*
+
+*转载请注明出处*
+</code></pre></div>]]></content>
+  </entry>
+  
+</feed>
