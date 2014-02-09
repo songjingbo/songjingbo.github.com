@@ -84,6 +84,10 @@ task :preview do
   compassPid = Process.spawn("compass watch")
   rackupPid = Process.spawn("rackup --port #{server_port}")
 
+  # 自动打开浏览器
+  #system "sleep 2; google-chrome http://localhost:#{server_port}/"
+  puts "http://115.28.1.238:#{server_port}/"
+
   trap("INT") {
     [jekyllPid, compassPid, rackupPid].each { |pid| Process.kill(9, pid) rescue Errno::ESRCH }
     exit 0
