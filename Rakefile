@@ -125,9 +125,8 @@ task :new_post, :title do |t, args|
     post.puts ""
     post.puts ""
     post.puts ""
-    post.puts "*本文地址: <a href=http://www.vneptune.com/blog/#{Time.now.strftime('%Y')}/#{Time.now.strftime('%m')}/#{Time.now.strftime('%d')}/#{title.to_url}/> http://www.vneptune.com/blog/#{Time.now.strftime('%Y')}/#{Time.now.strftime('%m')}/#{Time.now.strftime('%d')}/#{title.to_url}/</a>*"
-    post.puts ""
-    post.puts "*作者: vneptune*"
+    #post.puts "*本文地址: <a href=http://www.vneptune.com/blog/#{Time.now.strftime('%Y')}/#{Time.now.strftime('%m')}/#{Time.now.strftime('%d')}/#{title.to_url}/> http://www.vneptune.com/blog/#{Time.now.strftime('%Y')}/#{Time.now.strftime('%m')}/#{Time.now.strftime('%d')}/#{title.to_url}/</a>*"
+    post.puts "*本文地址: <a href=http://www.vneptune.com/blog/#{title.to_url}/> http://www.vneptune.com/blog/#{title.to_url}/</a>*"
     post.puts ""
     post.puts '*转载请注明出处*'
   end

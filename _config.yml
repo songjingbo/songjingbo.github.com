@@ -35,7 +35,9 @@ destination: public
 plugins: plugins
 code_dir: downloads/code
 category_dir: blog/categories
-markdown: rdiscount
+#markdown: rdiscount
+#markdown: kramdown
+markdown: redcarpet
 pygments: false # default python pygments have been replaced by pygments.rb
 
 paginate: 10          # Posts per page on the blog index
@@ -47,7 +49,8 @@ titlecase: true       # Converts page and post titles to titlecase
 
 # list each of the sidebar modules you want to include, in the order you want them to appear.
 # To add custom asides, create files in /source/_includes/custom/asides/ and add them to the list like 'custom/asides/custom_aside_name.html'
-default_asides: [asides/recent_posts.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]
+#default_asides: [asides/recent_posts.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]
+default_asides: [asides/recent_posts.html, asides/github.html]
 
 # Each layout uses the default asides, but they can have their own asides instead. Simply uncomment the lines below
 # and add an array with the asides you want to use.
@@ -95,3 +98,21 @@ google_analytics_tracking_id:
 
 # Facebook Like
 facebook_like: false
+
+# extensions of redcarpet
+# more(https://github.com/vmg/redcarpet)
+# no_intra_emphasis 不处理出现在字符串中的下划线. 例如: foo_bar_baz 不会变成 foo bar baz
+# tables 支持表格语法,表格语法非原生markdown 语法,参考 GFM 语法
+# autolink 网址自动转换成链接 不需要再加上 <>,需要以 http:// or www 开头
+# fenced_code_blocks 三个` 环绕定义代码 默认开启
+#
+# disable_indented_code_blocks : 关闭原生markdown 中顶格四个空格定义代码语法
+# space_after_headers : # 之后需要增加一个空格才可以表示为标题 #this is my header 不会是标题
+#
+# with_toc_data 给生成的 Header 标签增加锚点
+# strikethrough : 删除线 例如 快乐的删除线 使用两个~
+# underline : This is _underlined_ but this is still *italic* --> This is underlined but this is still italic
+# superscript : 上标, 例如 : this is the 2^(nd) time --> this is the 2nd time
+# extensions: ["no_intra_emphasis", "tables", "autolink", "fenced_code_blocks", "xhtml", "prettify", "with_toc_data","strikethrough","underline","superscript"]
+redcarpet:
+    extensions: ["underline", "superscript", "no_intra_emphasis", "tables", "highlight", "autolink", "fenced_code_blocks", "with_toc_data"]
