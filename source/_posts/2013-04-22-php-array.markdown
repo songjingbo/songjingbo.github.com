@@ -481,15 +481,18 @@ hashtable string类型key的插入更新函数
 
 检查bucket 数组是否初始化
 
+``` c
     #define CHECK_INIT (ht) do {                                                        \
         if (UNEXPECTED((ht)->nTableMask == 0)) {                                        \
             (ht)->arBuckets = (Bucket **) pecalloc((ht)->nTableSize, sizeof (Bucket *), (ht)->persistent);     \
             (ht)->nTableMask = (ht)->nTableSize – 1;                             \
         }                                                                        \
     } while (0)
+```
 
 1.htable bucket已存在该key 更新hashtable \*ht  Bucket\* p zval \*\*pData nDataSize sizeof( zval \*)
 
+``` c
     #define UPDATE_DATA (ht, p, pData, nDataSize)                                                         
         if (nDataSize == sizeof(void*)) {                                                                  
             if ((p)->pData != &(p)->pDataPtr) {    
@@ -507,9 +510,11 @@ hashtable string类型key的插入更新函数
             }                                                                                                         
             memcpy((p)->pData, pData, nDataSize);                                                     
         }
+```
 
 2.bucket为空 添加数据pData hashtable \*ht  Bucket\* p zval \*\*pData nDataSize sizeof( zval \*)
 
+``` c
     #define INIT_DATA (ht, p, pData, nDataSize);                                          \
             if (nDataSize == sizeof(void*)) {                                              \
                 memcpy(&(p)->pDataPtr, pData, sizeof(void *)); // 拷贝zval*到pDataPtr            \
@@ -594,23 +599,31 @@ hashtable string类型key的插入更新函数
         }
         return SUCCESS ;
     }
+```
  
 ## 2.5 Hashtable之查找
 
 查找string类型的arKey，数字类型的string是查不到的
 
+``` c
     ZEND_API int zend_hash_find(const HashTable *ht, const char *arKey, uint nKeyLength , void **pData );
+```
 
 查找string类型的arKey nkeyleng为0则为整型，否则为string类型的整型，hash值为h
 
+``` c
     ZEND_API int zend_hash_quick_find(const HashTable *ht, const char * arKey, uint nKeyLength, ulong h , void **pData );
+```
 
 查找整型h指定的data
 
+``` c
     ZEND_API int zend_hash_index_find(const HashTable *ht, ulong h, void **pData );
+```
 
 hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&（zval **） 返回zval **的p->pData
 
+``` c
     /* Returns SUCCESS if found and FAILURE if not
        ZEND_API int zend_hash_find(const HashTable *ht, const char *arKey, uint nKeyLength , void **pData )
        {
@@ -634,9 +647,11 @@ hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&（zval **�
      }
      return FAILURE ;
      }
+```
 
 ## 2.6 Hashtable之遍历
 
+``` c
     #define zend_hash_internal_pointer_reset (ht) \
     
     zend_hash_internal_pointer_reset_ex(ht, NULL)
@@ -685,9 +700,11 @@ hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&（zval **�
      else
     ht ->pInternalPointer = ht-> pListHead;
     }
+```
 
 判断下一个节点是否存在 
 
+``` c
     ZEND_API int zend_hash_get_current_key_type_ex(HashTable *ht, HashPosition *pos)
     {
         Bucket * p;
@@ -705,9 +722,11 @@ hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&（zval **�
         }
         return HASH_KEY_NON_EXISTANT ;
     }
+```
 
 后移，当前已经是最后则失败
 
+``` c
     ZEND_API int zend_hash_move_forward_ex(HashTable *ht , HashPosition * pos)
     {
         HashPosition * current = pos ? pos : &ht ->pInternalPointer;
@@ -720,9 +739,11 @@ hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&（zval **�
         } else
             return FAILURE ;
     }
+```
 
 获取当前key str\_index为 &（char \*） str\_length 为NULL index为 &(ulong) 
 
+``` c
         /* This function should be made binary safe  */
     ZEND_API int zend_hash_get_current_key_ex(const HashTable *ht, char **str_index, uint *str_length, ulong *num_index, zend_bool duplicate, HashPosition *pos)
     {
@@ -750,9 +771,11 @@ hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&（zval **�
         }
         return HASH_KEY_NON_EXISTANT ;
     }
+```
 
 获取当前data  &(zval \*\*)
 
+``` c
     ZEND_API int zend_hash_get_current_data_ex(HashTable *ht , void ** pData, HashPosition * pos)
     {
         Bucket * p;
@@ -768,9 +791,11 @@ hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&（zval **�
             return FAILURE ;
         }
     }
+```
 
 示例
 
+``` c
     for(zend_hash_internal_pointer_reset(Z_ARRVAL_P(request));
             SUCCESS == zend_hash_has_more_elements(Z_ARRVAL_P(request));
             zend_hash_move_forward(Z_ARRVAL_P(request)))
@@ -781,6 +806,7 @@ hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&（zval **�
         }
     
     }
+```
 
 *本文地址: <a href=http://www.vneptune.com/blog/php-array/> http://www.vneptune.com/blog/php-array/</a>*
 
