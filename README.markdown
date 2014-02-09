@@ -50,4 +50,6 @@ THE SOFTWARE IS PROVIDED ‘AS IS’, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
     rake preview可以在浏览器内预览
     
     最后执行rake deploy，将master提交到github上
+
+    添加页面 rake new_page['about']
 ```
