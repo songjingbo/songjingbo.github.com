@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: other | Vneptune's paper]]></title>
-  <link href="http://vneptune.com/blog/categories/other/atom.xml" rel="self"/>
-  <link href="http://vneptune.com/"/>
-  <updated>2014-02-09T20:03:06+08:00</updated>
-  <id>http://vneptune.com/</id>
+  <link href="http://songjingbo.github.com/blog/categories/other/atom.xml" rel="self"/>
+  <link href="http://songjingbo.github.com/"/>
+  <updated>2014-02-09T21:58:57+08:00</updated>
+  <id>http://songjingbo.github.com/</id>
   <author>
     <name><![CDATA[vneptune]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[把博客迁到github]]></title>
-    <link href="http://vneptune.com/blog/use-markdown/"/>
+    <link href="http://songjingbo.github.com/blog/use-markdown/"/>
     <updated>2013-03-27T01:40:00+08:00</updated>
-    <id>http://vneptune.com/blog/use-markdown</id>
+    <id>http://songjingbo.github.com/blog/use-markdown</id>
     <content type="html"><![CDATA[<p>今天把blog的域名迁到github :)</p>
 
 <p>以后可以直接用vim来写markdown, 编辑和排版都感觉不错</p>

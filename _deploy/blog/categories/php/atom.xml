@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: php | Vneptune's paper]]></title>
-  <link href="http://vneptune.com/blog/categories/php/atom.xml" rel="self"/>
-  <link href="http://vneptune.com/"/>
-  <updated>2014-02-09T20:03:06+08:00</updated>
-  <id>http://vneptune.com/</id>
+  <link href="http://songjingbo.github.com/blog/categories/php/atom.xml" rel="self"/>
+  <link href="http://songjingbo.github.com/"/>
+  <updated>2014-02-09T21:58:57+08:00</updated>
+  <id>http://songjingbo.github.com/</id>
   <author>
     <name><![CDATA[vneptune]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[PHP zval]]></title>
-    <link href="http://vneptune.com/blog/php-zval/"/>
+    <link href="http://songjingbo.github.com/blog/php-zval/"/>
     <updated>2013-04-21T22:54:00+08:00</updated>
-    <id>http://vneptune.com/blog/php-zval</id>
+    <id>http://songjingbo.github.com/blog/php-zval</id>
     <content type="html"><![CDATA[<h1 id="toc_0">1. PHP变量</h1>
 
 <p>PHP是弱类型语言,变量不需要声明类型, 直接使用, 根据调用需要自动进行类型转换;</p>

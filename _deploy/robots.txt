@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: http://vneptune.com/sitemap.xml 
+Sitemap: http://songjingbo.github.com/sitemap.xml 
