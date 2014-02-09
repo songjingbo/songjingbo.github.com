@@ -449,8 +449,6 @@ estrdup其实就是emalloc后memcpy, 返回以\0结尾的char *， c接口可安
 ```
 
 
-*本文地址: <a href=http://www.vneptune.com/blog/2013/04/21/php-zval/> http://www.vneptune.com/blog/2013/04/21/php-zval/</a>*
-
-*作者: vneptune*
+*本文地址: <a href=http://www.vneptune.com/blog/php-zval/> http://www.vneptune.com/blog/php-zval/</a>*
 
 *转载请注明出处*

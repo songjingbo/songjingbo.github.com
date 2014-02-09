@@ -782,8 +782,6 @@ hash查找 hashtable* arrkey keylen包括结尾\0 参数的pdata为&（zval **�
     
     }
 
-*本文地址: <a href=http://www.vneptune.com/blog/2013/04/22/php-array/> http://www.vneptune.com/blog/2013/04/22/php-array/</a>*
-
-*作者: vneptune*
+*本文地址: <a href=http://www.vneptune.com/blog/php-array/> http://www.vneptune.com/blog/php-array/</a>*
 
 *转载请注明出处*
