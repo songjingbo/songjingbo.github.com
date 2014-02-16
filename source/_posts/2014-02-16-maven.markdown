@@ -6,11 +6,9 @@ comments: true
 categories: "maven"
 ---
 
-# maven能做什么
+"manage a project's build, reporting and documentation from a central piece of information", 即管理项目构建.
 
-"manage a project's build, reporting and documentation from a central piece of information"
-
-即管理项目构建
+<!--more-->
 
 # 安装
 
