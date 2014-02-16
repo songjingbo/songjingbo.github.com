@@ -4,7 +4,7 @@
   <title><![CDATA[Vneptune's paper]]></title>
   <link href="http://songjingbo.github.com/atom.xml" rel="self"/>
   <link href="http://songjingbo.github.com/"/>
-  <updated>2014-02-16T23:37:39+08:00</updated>
+  <updated>2014-02-16T23:38:17+08:00</updated>
   <id>http://songjingbo.github.com/</id>
   <author>
     <name><![CDATA[vneptune]]></name>
@@ -18,19 +18,17 @@
     <link href="http://songjingbo.github.com/blog/maven/"/>
     <updated>2014-02-16T21:26:00+08:00</updated>
     <id>http://songjingbo.github.com/blog/maven</id>
-    <content type="html"><![CDATA[<h1 id="toc_0">maven能做什么</h1>
-
-<p>&quot;manage a project&#39;s build, reporting and documentation from a central piece of information&quot;, 即管理项目构建.</p>
+    <content type="html"><![CDATA[<p>&quot;manage a project&#39;s build, reporting and documentation from a central piece of information&quot;, 即管理项目构建.</p>
 
 <!--more-->
 
-<h1 id="toc_1">安装</h1>
+<h1 id="toc_0">安装</h1>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo apt-get install maven2
 </span></code></pre></td></tr></table></div></figure>
 
-<h1 id="toc_2">新建项目</h1>
+<h1 id="toc_1">新建项目</h1>
 
 <p>新建一个helloworld项目, </p>
 
@@ -44,7 +42,7 @@
 </span><span class='line'>       -Dpackage<span class="o">=</span>com.magos.helloworld -Dversion<span class="o">=</span>1.0-SNAPSHOT
 </span></code></pre></td></tr></table></div></figure>
 
-<h1 id="toc_3">部署路径</h1>
+<h1 id="toc_2">部署路径</h1>
 
 <p>查看部署路径</p>
 
@@ -118,7 +116,7 @@
 </tr>
 </tbody></table>
 
-<h1 id="toc_4">构建项目</h1>
+<h1 id="toc_3">构建项目</h1>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -128,7 +126,7 @@
 
 <p>运行时需要从maven repository下载依赖模块到本地库(~/.m2/repository/)</p>
 
-<h1 id="toc_5">运行</h1>
+<h1 id="toc_4">运行</h1>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -136,7 +134,7 @@
 </span><span class='line'>Hello World!
 </span></code></pre></td></tr></table></div></figure>
 
-<h1 id="toc_6">POM</h1>
+<h1 id="toc_5">POM</h1>
 
 <p><figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -210,11 +208,11 @@ maven中项目构建的唯一标识是<code>groupId:artifactId:packaging:version
 
 <p><code>mvn install</code>可以将当前项目安装到本地库中.</p>
 
-<h1 id="toc_7">插件</h1>
+<h1 id="toc_6">插件</h1>
 
 <p>mvn的实现思路类似微内核，主要构建功能都通过插件机制实现，包括archetype插件，Compiler插件, 通过<code>mvn pluginId:goalId</code>方式使用插件中的功能，例如前面新建项目用到的<code>mvn archetype:generate</code></p>
 
-<h1 id="toc_8">生命周期</h1>
+<h1 id="toc_7">生命周期</h1>
 
 <p>mvn默认包括以下生命周期，其中每个生命周期可以绑定多个相关的插件目标</p>
 
@@ -258,7 +256,7 @@ maven中项目构建的唯一标识是<code>groupId:artifactId:packaging:version
 </tr>
 </tbody></table>
 
-<h1 id="toc_9">参考文献</h1>
+<h1 id="toc_8">参考文献</h1>
 
 <ol>
 <li><a href="http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html">http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html</a>, <a href="http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html">http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html</a></li>
