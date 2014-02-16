@@ -1,0 +1,155 @@
+---
+layout: post
+title: "maven"
+date: 2014-02-16 21:26
+comments: true
+categories: "maven"
+---
+
+# maven能做什么
+
+"manage a project's build, reporting and documentation from a central piece of information"
+
+即管理项目构建
+
+# 安装
+
+``` bash
+    sudo apt-get install maven2
+```
+
+# 新建项目
+
+新建一个helloworld项目, 
+
+``` bash
+    $ mvn archetype:generate \
+           -DgroupId=com.magos.helloworld \
+           -DartifactId=helloworld \
+           -Dpackage=com.magos.helloworld -Dversion=1.0-SNAPSHOT 
+```
+
+# 部署路径
+
+查看部署路径
+
+``` bash
+    $ tree helloworld/
+
+    // output
+    helloworld/
+    ├── pom.xml
+    └── src
+        ├── main
+        │   └── java
+        │       └── com
+        │           └── magos
+        │               └── helloworld
+        │                   └── App.java
+        └── test
+            └── java
+                └── com
+                    └── magos
+                        └── helloworld
+                            └── AppTest.java
+
+```
+
+|路径                             | 说明                              |
+| ------------------------------- |:---------------------------------:|
+|${basedir}                       | 存放 pom.xml和所有的子目录        |
+|${basedir}/src/main/java         | 项目的 java源代码                 |
+|${basedir}/src/main/resources    | 项目的资源，比如说 property文件   |
+|${basedir}/src/test/java         |项目的测试类，比如说 JUnit代码     |
+|${basedir}/src/test/resources    |测试使用的资源                     |
+|${basedir}/target/classes        | 编译后 的 classes                 |
+
+
+
+# 构建项目
+
+``` bash
+    cd helloworld
+    mvn package
+```
+
+运行时需要从maven repository下载依赖模块到本地库(~/.m2/repository/)
+
+# 运行
+
+``` bash
+    java -cp target/helloworld-1.0-SNAPSHOT.jar com.magos.hellowrld.App
+    Hello World!
+```
+
+# POM
+
+``` xml
+<project 
+xmlns="http://maven.apache.org/POM/4.0.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation=
+"http://maven.apache.org/POM/4.0.0 
+http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+
+<groupId>com.magos.helloworld</groupId>
+<artifactId>helloworld</artifactId>
+<version>1.0-SNAPSHOT</version>
+<packaging>jar</packaging>
+
+<name>helloworld</name>
+<url>http://maven.apache.org</url>
+
+<properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+
+<dependencies>
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>3.8.1</version>
+        <--! scope 决定了依赖关系的适用范围 
+             默认值是 compile, 任何时候都会被包含在 classpath 中 -->
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+</project>
+```
+maven中项目构建的唯一标识是`groupId:artifactId:packaging:version`, 也叫做maven坐标(很贴切的名字,在众多项目中用来精确定位某一个项目).
+如此，项目间关联关系就可以通过项目的唯一标识表达.
+
+通常，一个项目会划分为多个子模块，每个子模块有独立的POM，继承共同的上级POM，这样上层POM构建就能自动构建各子模块，降低了我们构建的成本.
+
+其中dependencies部分是依赖项目模块，会先在本地库中寻找，本地不存在时会去maven中在线寻找.
+
+`mvn install`可以将当前项目安装到本地库中.
+
+# 插件
+
+mvn的实现思路类似微内核，主要构建功能都通过插件机制实现，包括archetype插件，Compiler插件, 通过`mvn pluginId:goalId`方式使用插件中的功能，例如前面新建项目用到的`mvn archetype:generate`
+
+# 生命周期
+
+mvn默认包括以下生命周期，其中每个生命周期可以绑定多个相关的插件目标
+
+|阶段                          |  插件目标            |
+| ---------------------------- |:--------------------:| 
+|process-resources 阶段      | resources:resources|
+|compile 阶段                | compiler:compile|
+|process-classes 阶段        | (empty)|
+|process-test-resources 阶段 | resources:testResources|
+|test-compile 阶段           | compiler:testCompile|
+|test 阶段                   | surefire:test|
+|prepare-package 阶段        | (empty)|
+|package 阶段                | jar:jar|
+
+# 参考文献
+
+1. http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html, http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html
+
+
+*本文地址: <a href=http://www.vneptune.com/blog/maven/> http://www.vneptune.com/blog/maven/</a>*
+
+*转载请注明出处*
