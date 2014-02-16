@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: maven | Vneptune's paper]]></title>
+  <link href="http://songjingbo.github.com/blog/categories/maven/atom.xml" rel="self"/>
+  <link href="http://songjingbo.github.com/"/>
+  <updated>2014-02-16T23:34:30+08:00</updated>
+  <id>http://songjingbo.github.com/</id>
+  <author>
+    <name><![CDATA[vneptune]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[maven]]></title>
+    <link href="http://songjingbo.github.com/blog/maven/"/>
+    <updated>2014-02-16T21:26:00+08:00</updated>
+    <id>http://songjingbo.github.com/blog/maven</id>
+    <content type="html"><![CDATA[<h1 id="toc_0">maven能做什么</h1>
+
+<p>&quot;manage a project&#39;s build, reporting and documentation from a central piece of information&quot;</p>
+
+<p>即管理项目构建</p>
+
+<h1 id="toc_1">安装</h1>
+<div class="highlight"><pre><code class="bash">    sudo apt-get install maven2
+</code></pre></div>
+<h1 id="toc_2">新建项目</h1>
+
+<p>新建一个helloworld项目, </p>
+<div class="highlight"><pre><code class="bash">    <span class="nv">$ </span>mvn archetype:generate <span class="se">\</span>
+           -DgroupId<span class="o">=</span>com.magos.helloworld <span class="se">\</span>
+           -DartifactId<span class="o">=</span>helloworld <span class="se">\</span>
+           -Dpackage<span class="o">=</span>com.magos.helloworld -Dversion<span class="o">=</span>1.0-SNAPSHOT 
+</code></pre></div>
+<h1 id="toc_3">部署路径</h1>
+
+<p>查看部署路径</p>
+<div class="highlight"><pre><code class="bash">    <span class="nv">$ </span>tree helloworld/
+
+    // output
+    helloworld/
+    ├── pom.xml
+    └── src
+        ├── main
+        │   └── java
+        │       └── com
+        │           └── magos
+        │               └── helloworld
+        │                   └── App.java
+        └── <span class="nb">test</span>
+            └── java
+                └── com
+                    └── magos
+                        └── helloworld
+                            └── AppTest.java
+</code></pre></div>
+<table><thead>
+<tr>
+<th>路径</th>
+<th align="center">说明</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>${basedir}</td>
+<td align="center">存放 pom.xml和所有的子目录</td>
+</tr>
+<tr>
+<td>${basedir}/src/main/java</td>
+<td align="center">项目的 java源代码</td>
+</tr>
+<tr>
+<td>${basedir}/src/main/resources</td>
+<td align="center">项目的资源，比如说 property文件</td>
+</tr>
+<tr>
+<td>${basedir}/src/test/java</td>
+<td align="center">项目的测试类，比如说 JUnit代码</td>
+</tr>
+<tr>
+<td>${basedir}/src/test/resources</td>
+<td align="center">测试使用的资源</td>
+</tr>
+<tr>
+<td>${basedir}/target/classes</td>
+<td align="center">编译后 的 classes</td>
+</tr>
+</tbody></table>
+
+<h1 id="toc_4">构建项目</h1>
+<div class="highlight"><pre><code class="bash">    <span class="nb">cd </span>helloworld
+    mvn package
+</code></pre></div>
+<p>运行时需要从maven repository下载依赖模块到本地库(~/.m2/repository/)</p>
+
+<h1 id="toc_5">运行</h1>
+<div class="highlight"><pre><code class="bash">    java -cp target/helloworld-1.0-SNAPSHOT.jar com.magos.hellowrld.App
+    Hello World!
+</code></pre></div>
+<h1 id="toc_6">POM</h1>
+<div class="highlight"><pre><code class="xml"><span class="nt">&lt;project</span> 
+<span class="na">xmlns=</span><span class="s">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> 
+<span class="na">xmlns:xsi=</span><span class="s">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
+<span class="na">xsi:schemaLocation=</span>
+<span class="s">&quot;http://maven.apache.org/POM/4.0.0 </span>
+<span class="s">http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span><span class="nt">&gt;</span>
+<span class="nt">&lt;modelVersion&gt;</span>4.0.0<span class="nt">&lt;/modelVersion&gt;</span>
+
+<span class="nt">&lt;groupId&gt;</span>com.magos.helloworld<span class="nt">&lt;/groupId&gt;</span>
+<span class="nt">&lt;artifactId&gt;</span>helloworld<span class="nt">&lt;/artifactId&gt;</span>
+<span class="nt">&lt;version&gt;</span>1.0-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;packaging&gt;</span>jar<span class="nt">&lt;/packaging&gt;</span>
+
+<span class="nt">&lt;name&gt;</span>helloworld<span class="nt">&lt;/name&gt;</span>
+<span class="nt">&lt;url&gt;</span>http://maven.apache.org<span class="nt">&lt;/url&gt;</span>
+
+<span class="nt">&lt;properties&gt;</span>
+    <span class="nt">&lt;project.build.sourceEncoding&gt;</span>UTF-8<span class="nt">&lt;/project.build.sourceEncoding&gt;</span>
+<span class="nt">&lt;/properties&gt;</span>
+
+<span class="nt">&lt;dependencies&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>junit<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>junit<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>3.8.1<span class="nt">&lt;/version&gt;</span>
+        <span class="nt">&lt;--</span><span class="err">!</span> <span class="err">scope</span> <span class="err">决定了依赖关系的适用范围</span> 
+             <span class="err">默认值是</span> <span class="err">compile,</span> <span class="err">任何时候都会被包含在</span> <span class="err">classpath</span> <span class="err">中</span> <span class="err">--</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;scope&gt;</span>test<span class="nt">&lt;/scope&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;/dependencies&gt;</span>
+<span class="nt">&lt;/project&gt;</span>
+</code></pre></div>
+<p>maven中项目构建的唯一标识是<code>groupId:artifactId:packaging:version</code>, 也叫做maven坐标(很贴切的名字,在众多项目中用来精确定位某一个项目).
+如此，项目间关联关系就可以通过项目的唯一标识表达.</p>
+
+<p>通常，一个项目会划分为多个子模块，每个子模块有独立的POM，继承共同的上级POM，这样上层POM构建就能自动构建各子模块，降低了我们构建的成本.</p>
+
+<p>其中dependencies部分是依赖项目模块，会先在本地库中寻找，本地不存在时会去maven中在线寻找.</p>
+
+<p><code>mvn install</code>可以将当前项目安装到本地库中.</p>
+
+<h1 id="toc_7">插件</h1>
+
+<p>mvn的实现思路类似微内核，主要构建功能都通过插件机制实现，包括archetype插件，Compiler插件, 通过<code>mvn pluginId:goalId</code>方式使用插件中的功能，例如前面新建项目用到的<code>mvn archetype:generate</code></p>
+
+<h1 id="toc_8">生命周期</h1>
+
+<p>mvn默认包括以下生命周期，其中每个生命周期可以绑定多个相关的插件目标</p>
+
+<table><thead>
+<tr>
+<th>阶段</th>
+<th align="center">插件目标</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>process-resources 阶段</td>
+<td align="center">resources:resources</td>
+</tr>
+<tr>
+<td>compile 阶段</td>
+<td align="center">compiler:compile</td>
+</tr>
+<tr>
+<td>process-classes 阶段</td>
+<td align="center">(empty)</td>
+</tr>
+<tr>
+<td>process-test-resources 阶段</td>
+<td align="center">resources:testResources</td>
+</tr>
+<tr>
+<td>test-compile 阶段</td>
+<td align="center">compiler:testCompile</td>
+</tr>
+<tr>
+<td>test 阶段</td>
+<td align="center">surefire:test</td>
+</tr>
+<tr>
+<td>prepare-package 阶段</td>
+<td align="center">(empty)</td>
+</tr>
+<tr>
+<td>package 阶段</td>
+<td align="center">jar:jar</td>
+</tr>
+</tbody></table>
+
+<h1 id="toc_9">参考文献</h1>
+
+<ol>
+<li><a href="http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html">http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html</a>, <a href="http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html">http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html</a></li>
+</ol>
+
+<p><em>本文地址: <a href=http://www.vneptune.com/blog/maven/> <a href="http://www.vneptune.com/blog/maven/">http://www.vneptune.com/blog/maven/</a></a></em></p>
+
+<p><em>转载请注明出处</em></p>
+]]></content>
+  </entry>
+  
+</feed>
