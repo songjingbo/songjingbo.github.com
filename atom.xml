@@ -4,7 +4,7 @@
   <title><![CDATA[Vneptune's paper]]></title>
   <link href="http://songjingbo.github.com/atom.xml" rel="self"/>
   <link href="http://songjingbo.github.com/"/>
-  <updated>2014-02-16T23:38:17+08:00</updated>
+  <updated>2014-02-16T23:58:54+08:00</updated>
   <id>http://songjingbo.github.com/</id>
   <author>
     <name><![CDATA[vneptune]]></name>
@@ -28,9 +28,9 @@
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo apt-get install maven2
 </span></code></pre></td></tr></table></div></figure>
 
-<h1 id="toc_1">新建项目</h1>
+<h1 id="toc_1">项目构建</h1>
 
-<p>新建一个helloworld项目, </p>
+<h3 id="toc_2">新建项目</h3>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -42,9 +42,7 @@
 </span><span class='line'>       -Dpackage<span class="o">=</span>com.magos.helloworld -Dversion<span class="o">=</span>1.0-SNAPSHOT
 </span></code></pre></td></tr></table></div></figure>
 
-<h1 id="toc_2">部署路径</h1>
-
-<p>查看部署路径</p>
+<h3 id="toc_3">查看部署路径</h3>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -84,6 +82,10 @@
 </span><span class='line'>                        └── AppTest.java
 </span></code></pre></td></tr></table></div></figure>
 
+<h3 id="toc_4">默认路径</h3>
+
+<hr>
+
 <table><thead>
 <tr>
 <th>路径</th>
@@ -116,27 +118,11 @@
 </tr>
 </tbody></table>
 
-<h1 id="toc_3">构建项目</h1>
+<hr>
+
+<h3 id="toc_5">POM文件</h3>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd </span>helloworld
-</span><span class='line'>mvn package
-</span></code></pre></td></tr></table></div></figure>
-
-<p>运行时需要从maven repository下载依赖模块到本地库(~/.m2/repository/)</p>
-
-<h1 id="toc_4">运行</h1>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>java -cp target/helloworld-1.0-SNAPSHOT.jar com.magos.hellowrld.App
-</span><span class='line'>Hello World!
-</span></code></pre></td></tr></table></div></figure>
-
-<h1 id="toc_5">POM</h1>
-
-<p><figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -168,11 +154,11 @@
 <span class='line-number'>30</span>
 <span class='line-number'>31</span>
 </pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;project</span>
-</span><span class='line'><span class="na">xmlns=</span><span class="s">&quot;<a href="http://maven.apache.org/POM/4.0.0">http://maven.apache.org/POM/4.0.0</a>&quot;</span>
-</span><span class='line'><span class="na">xmlns:xsi=</span><span class="s">&quot;<a href="http://www.w3.org/2001/XMLSchema-instance">http://www.w3.org/2001/XMLSchema-instance</a>&quot;</span>
+</span><span class='line'><span class="na">xmlns=</span><span class="s">&quot;http://maven.apache.org/POM/4.0.0&quot;</span>
+</span><span class='line'><span class="na">xmlns:xsi=</span><span class="s">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
 </span><span class='line'><span class="na">xsi:schemaLocation=</span>
-</span><span class='line'><span class="s">&quot;<a href="http://maven.apache.org/POM/4.0.0">http://maven.apache.org/POM/4.0.0</a> </span>
-</span><span class='line'><span class="s"><a href="http://maven.apache.org/xsd/maven-4.0.0.xsd">http://maven.apache.org/xsd/maven-4.0.0.xsd</a>&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'><span class="s">&quot;http://maven.apache.org/POM/4.0.0 </span>
+</span><span class='line'><span class="s">http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span><span class="nt">&gt;</span>
 </span><span class='line'><span class="nt">&lt;modelVersion&gt;</span>4.0.0<span class="nt">&lt;/modelVersion&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;groupId&gt;</span>com.magos.helloworld<span class="nt">&lt;/groupId&gt;</span>
@@ -181,7 +167,7 @@
 </span><span class='line'><span class="nt">&lt;packaging&gt;</span>jar<span class="nt">&lt;/packaging&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;name&gt;</span>helloworld<span class="nt">&lt;/name&gt;</span>
-</span><span class='line'><span class="nt">&lt;url&gt;</span><a href="http://maven.apache.org">http://maven.apache.org</a><span class="nt">&lt;/url&gt;</span>
+</span><span class='line'><span class="nt">&lt;url&gt;</span>http://maven.apache.org<span class="nt">&lt;/url&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;properties&gt;</span>
 </span><span class='line'>    <span class="nt">&lt;project.build.sourceEncoding&gt;</span>UTF-8<span class="nt">&lt;/project.build.sourceEncoding&gt;</span>
@@ -199,7 +185,8 @@
 </span><span class='line'><span class="nt">&lt;/dependencies&gt;</span>
 </span><span class='line'><span class="nt">&lt;/project&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
-maven中项目构建的唯一标识是<code>groupId:artifactId:packaging:version</code>, 也叫做maven坐标(很贴切的名字,在众多项目中用来精确定位某一个项目).
+
+<p>maven中项目构建的唯一标识是<code>groupId:artifactId:packaging:version</code>, 也叫做maven坐标(很贴切的名字,在众多项目中用来精确定位某一个项目).
 如此，项目间关联关系就可以通过项目的唯一标识表达.</p>
 
 <p>通常，一个项目会划分为多个子模块，每个子模块有独立的POM，继承共同的上级POM，这样上层POM构建就能自动构建各子模块，降低了我们构建的成本.</p>
@@ -208,13 +195,33 @@ maven中项目构建的唯一标识是<code>groupId:artifactId:packaging:version
 
 <p><code>mvn install</code>可以将当前项目安装到本地库中.</p>
 
-<h1 id="toc_6">插件</h1>
+<h3 id="toc_6">执行构建</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd </span>helloworld
+</span><span class='line'>mvn package
+</span></code></pre></td></tr></table></div></figure>
+
+<p>运行时需要从maven repository下载依赖模块到本地库(~/.m2/repository/)</p>
+
+<h3 id="toc_7">运行程序</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>java -cp target/helloworld-1.0-SNAPSHOT.jar com.magos.hellowrld.App
+</span><span class='line'>Hello World!
+</span></code></pre></td></tr></table></div></figure>
+
+<h1 id="toc_8">插件机制</h1>
 
 <p>mvn的实现思路类似微内核，主要构建功能都通过插件机制实现，包括archetype插件，Compiler插件, 通过<code>mvn pluginId:goalId</code>方式使用插件中的功能，例如前面新建项目用到的<code>mvn archetype:generate</code></p>
 
-<h1 id="toc_7">生命周期</h1>
+<h1 id="toc_9">生命周期</h1>
 
 <p>mvn默认包括以下生命周期，其中每个生命周期可以绑定多个相关的插件目标</p>
+
+<hr>
 
 <table><thead>
 <tr>
@@ -256,7 +263,9 @@ maven中项目构建的唯一标识是<code>groupId:artifactId:packaging:version
 </tr>
 </tbody></table>
 
-<h1 id="toc_8">参考文献</h1>
+<hr>
+
+<h1 id="toc_10">参考文献</h1>
 
 <ol>
 <li><a href="http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html">http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html</a>, <a href="http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html">http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html</a></li>

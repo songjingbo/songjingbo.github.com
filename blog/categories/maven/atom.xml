@@ -4,7 +4,7 @@
   <title><![CDATA[Category: maven | Vneptune's paper]]></title>
   <link href="http://songjingbo.github.com/blog/categories/maven/atom.xml" rel="self"/>
   <link href="http://songjingbo.github.com/"/>
-  <updated>2014-02-16T23:38:17+08:00</updated>
+  <updated>2014-02-16T23:58:54+08:00</updated>
   <id>http://songjingbo.github.com/</id>
   <author>
     <name><![CDATA[vneptune]]></name>
@@ -25,17 +25,15 @@
 <h1 id="toc_0">安装</h1>
 <div class="highlight"><pre><code class="bash">    sudo apt-get install maven2
 </code></pre></div>
-<h1 id="toc_1">新建项目</h1>
+<h1 id="toc_1">项目构建</h1>
 
-<p>新建一个helloworld项目, </p>
+<h3 id="toc_2">新建项目</h3>
 <div class="highlight"><pre><code class="bash">    <span class="nv">$ </span>mvn archetype:generate <span class="se">\</span>
            -DgroupId<span class="o">=</span>com.magos.helloworld <span class="se">\</span>
            -DartifactId<span class="o">=</span>helloworld <span class="se">\</span>
            -Dpackage<span class="o">=</span>com.magos.helloworld -Dversion<span class="o">=</span>1.0-SNAPSHOT 
 </code></pre></div>
-<h1 id="toc_2">部署路径</h1>
-
-<p>查看部署路径</p>
+<h3 id="toc_3">查看部署路径</h3>
 <div class="highlight"><pre><code class="bash">    <span class="nv">$ </span>tree helloworld/
 
     // output
@@ -55,6 +53,10 @@
                         └── helloworld
                             └── AppTest.java
 </code></pre></div>
+<h3 id="toc_4">默认路径</h3>
+
+<hr>
+
 <table><thead>
 <tr>
 <th>路径</th>
@@ -87,17 +89,9 @@
 </tr>
 </tbody></table>
 
-<h1 id="toc_3">构建项目</h1>
-<div class="highlight"><pre><code class="bash">    <span class="nb">cd </span>helloworld
-    mvn package
-</code></pre></div>
-<p>运行时需要从maven repository下载依赖模块到本地库(~/.m2/repository/)</p>
+<hr>
 
-<h1 id="toc_4">运行</h1>
-<div class="highlight"><pre><code class="bash">    java -cp target/helloworld-1.0-SNAPSHOT.jar com.magos.hellowrld.App
-    Hello World!
-</code></pre></div>
-<h1 id="toc_5">POM</h1>
+<h3 id="toc_5">POM文件</h3>
 <div class="highlight"><pre><code class="xml"><span class="nt">&lt;project</span> 
 <span class="na">xmlns=</span><span class="s">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> 
 <span class="na">xmlns:xsi=</span><span class="s">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
@@ -139,13 +133,25 @@
 
 <p><code>mvn install</code>可以将当前项目安装到本地库中.</p>
 
-<h1 id="toc_6">插件</h1>
+<h3 id="toc_6">执行构建</h3>
+<div class="highlight"><pre><code class="bash">    <span class="nb">cd </span>helloworld
+    mvn package
+</code></pre></div>
+<p>运行时需要从maven repository下载依赖模块到本地库(~/.m2/repository/)</p>
+
+<h3 id="toc_7">运行程序</h3>
+<div class="highlight"><pre><code class="bash">    java -cp target/helloworld-1.0-SNAPSHOT.jar com.magos.hellowrld.App
+    Hello World!
+</code></pre></div>
+<h1 id="toc_8">插件机制</h1>
 
 <p>mvn的实现思路类似微内核，主要构建功能都通过插件机制实现，包括archetype插件，Compiler插件, 通过<code>mvn pluginId:goalId</code>方式使用插件中的功能，例如前面新建项目用到的<code>mvn archetype:generate</code></p>
 
-<h1 id="toc_7">生命周期</h1>
+<h1 id="toc_9">生命周期</h1>
 
 <p>mvn默认包括以下生命周期，其中每个生命周期可以绑定多个相关的插件目标</p>
+
+<hr>
 
 <table><thead>
 <tr>
@@ -187,7 +193,9 @@
 </tr>
 </tbody></table>
 
-<h1 id="toc_8">参考文献</h1>
+<hr>
+
+<h1 id="toc_10">参考文献</h1>
 
 <ol>
 <li><a href="http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html">http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html</a>, <a href="http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html">http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html</a></li>
