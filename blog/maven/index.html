@@ -208,6 +208,8 @@ sudo apt-get install maven2 &hellip;">
 
 <h3 id="toc_5">POM文件</h3>
 
+<p>POM(Project Object Module), 即项目对象模型, 包括项目的基本信息、源代码、配置文件、开发者的信息和角色、问题追踪系统、组织信息、项目授权、项目的 url、以及构建项目所用的插件，依赖继承关系</p>
+
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
@@ -275,6 +277,42 @@ sudo apt-get install maven2 &hellip;">
 <p>maven中项目构建的唯一标识是<code>groupId:artifactId:packaging:version</code>, 也叫做maven坐标(很贴切的名字,在众多项目中用来精确定位某一个项目).
 如此，项目间关联关系就可以通过项目的唯一标识表达.</p>
 
+<hr>
+
+<table><thead>
+<tr>
+<th>字段</th>
+<th align="center">说明</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>groupId</td>
+<td align="center">项目属于哪个组</td>
+</tr>
+<tr>
+<td>artifactId</td>
+<td align="center">项目在组中唯一的 ID</td>
+</tr>
+<tr>
+<td>version</td>
+<td align="center">当前项目的版本</td>
+</tr>
+<tr>
+<td>packaging</td>
+<td align="center">项目发布时的打包类型</td>
+</tr>
+<tr>
+<td>name</td>
+<td align="center">友好的项目名称</td>
+</tr>
+<tr>
+<td>modelVersion</td>
+<td align="center">POM 模型的版本</td>
+</tr>
+</tbody></table>
+
+<hr>
+
 <p>通常，一个项目会划分为多个子模块，每个子模块有独立的POM，继承共同的上级POM，这样上层POM构建就能自动构建各子模块，降低了我们构建的成本.</p>
 
 <p>其中dependencies部分是依赖项目模块，会先在本地库中寻找，本地不存在时会去maven中在线寻找.</p>
@@ -301,7 +339,10 @@ sudo apt-get install maven2 &hellip;">
 
 <h1 id="toc_8">插件机制</h1>
 
-<p>mvn的实现思路类似微内核，主要构建功能都通过插件机制实现，包括archetype插件，Compiler插件, 通过<code>mvn pluginId:goalId</code>方式使用插件中的功能，例如前面新建项目用到的<code>mvn archetype:generate</code></p>
+<p>mvn的实现思路类似微内核，maven本身是一个插件框架，仅仅定义了抽象的生命周期，主要构建功能都通过插件机制实现.
+将生命周期的阶段与插件目标相互绑定，就可以在特定的阶段完成具体的构建任务.</p>
+
+<p>通过<code>mvn pluginId:goalId</code>方式使用插件中的功能. 例如, 前面新建项目用到的<code>mvn archetype:generate</code>就属于archetype插件，其他常用的还有Compiler插件 </p>
 
 <h1 id="toc_9">生命周期</h1>
 
@@ -351,10 +392,14 @@ sudo apt-get install maven2 &hellip;">
 
 <hr>
 
-<h1 id="toc_10">参考文献</h1>
+<h1 id="toc_10">依赖管理</h1>
+
+<h1 id="toc_11">参考文献</h1>
 
 <ol>
 <li><a href="http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html">http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-1-406235-zhs.html</a>, <a href="http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html">http://www.oracle.com/technetwork/cn/community/java/apache-maven-getting-started-2-405568-zhs.html</a></li>
+<li><a href="http://www.ibm.com/developerworks/cn/java/j-lo-maven/">http://www.ibm.com/developerworks/cn/java/j-lo-maven/</a></li>
+<li><a href="http://www.ibm.com/developerworks/cn/java/j-maven/">http://www.ibm.com/developerworks/cn/java/j-maven/</a></li>
 </ol>
 
 <p><em>本文地址: <a href=http://www.vneptune.com/blog/maven/> <a href="http://www.vneptune.com/blog/maven/">http://www.vneptune.com/blog/maven/</a></a></em></p>
