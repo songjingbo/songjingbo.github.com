@@ -5,11 +5,21 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: maven - Vneptune's paper</title>
+  <title>spring - Vneptune's paper</title>
   <meta name="author" content="vneptune">
 
   
-  <meta name="description" content="Category: maven">
+  <meta name="description" content="框架结构 Spring 框架由7个模块组成 1
+2
+3
+4
+5
+6
+7
+------------------------------
+| AOP | ORM | WEB | MVC |
+| |----------------| |
+| | DAO | Context &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +28,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://songjingbo.github.comblog/categories/maven/">
+  <link rel="canonical" href="http://songjingbo.github.com/blog/spring/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -74,36 +84,136 @@
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Category: Maven</h1>
+    
+      
+        <h1 class="entry-title">Spring</h1>
+      
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-17T20:47:00+08:00" pubdate data-updated="true">2014-02-17</time>
+        
+      </p>
     
   </header>
-  
-  <div id="blog-archives" class="category">
 
 
+<div class="entry-content"><h1 id="toc_0">框架结构</h1>
 
-  
-  <h2>2014</h2>
+<p>Spring 框架由7个模块组成</p>
 
-<article>
-  
-<h1><a href="/blog/maven/">maven</a></h1>
-<time datetime="2014-02-16T21:26:00+08:00" pubdate><span class='month'>Feb</span> <span class='day'>16</span> <span class='year'>2014</span></time>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>------------------------------
+</span><span class='line'>| AOP | ORM | WEB      | MVC |
+</span><span class='line'>|     |----------------|     |
+</span><span class='line'>|     | DAO | Context  |     |
+</span><span class='line'>------------------------------
+</span><span class='line'>|     Spring Core            |
+</span><span class='line'>------------------------------</span></code></pre></td></tr></table></div></figure>
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/maven/'>maven</a></span>
-</footer>
+<!--more-->
 
+<p>每个模块的功能如下</p>
 
-</article>
+<p>Core: 主要组件是 BeanFactory，实现控制反转(IOC), 通过配置解耦程序代码</p>
 
+<p>Context: 上下文配置, 包括企业服务，例如 JNDI、EJB、电子邮件、国际化、校验和调度功能</p>
+
+<p>AOP: 提供AOP支持</p>
+
+<p>DAO：DB访问</p>
+
+<p>ORM：提供ORM工具，其中包括 JDO、Hibernate</p>
+
+<p>Web: 提供Web应用程序上下文. 支持与 Jakarta Struts 的集成</p>
+
+<p>MVC: MVC框架</p>
+
+<p>TODO </p>
+
+<p><em>本文地址: <a href=http://www.vneptune.com/blog/spring/> <a href="http://www.vneptune.com/blog/spring/">http://www.vneptune.com/blog/spring/</a></a></em></p>
+
+<p><em>转载请注明出处</em></p>
 </div>
 
+
+  <footer>
+    <p class="meta">
+      
   
+
+<span class="byline author vcard">Posted by <span class="fn">vneptune</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-17T20:47:00+08:00" pubdate data-updated="true">2014-02-17</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/spring/'>spring</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://songjingbo.github.com/blog/spring/" data-via="" data-counturl="http://songjingbo.github.com/blog/spring/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left articlenav" href="/blog/maven/" title="Previous Post: maven">&laquo; maven</a>
+      
+      
+        <a class="basic-alignment right articlenav" href="/blog/solid/" title="Next Post: solid">solid &raquo;</a>
+      
+    </p>
+  </footer>
 </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
 
 </div>
 
@@ -168,7 +278,10 @@
       var disqus_shortname = 'vneptune';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://songjingbo.github.com/blog/spring/';
+        var disqus_url = 'http://songjingbo.github.com/blog/spring/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

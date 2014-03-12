@@ -9,7 +9,7 @@
   <meta name="author" content="vneptune">
 
   
-  <meta name="description" content="&quot;manage a project&#39;s build, reporting and documentation from a central piece of information&quot;, 即管理项目构建. ">
+  <meta name="description" content="这两天看了看spring的设计, 想到了OO的SOLID原则，这里顺便整理一下备忘 :) 为了设计出易于维护和扩展的程序, Robert Martin提出了面向对象5个设计原则, Single responsibility, Open-closed, Liskov substitution, &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -75,6 +75,111 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <!-- Now we're back to normal posts. Note the links used under href in both headers.-->
+        <h1 class="entry-title"><a href="/blog/solid/">Solid</a></h1>
+      
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-18T23:01:00+08:00" pubdate data-updated="true">2014-02-18</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这两天看了看spring的设计, 想到了OO的SOLID原则，这里顺便整理一下备忘 :)</p>
+
+<p>为了设计出易于维护和扩展的程序, Robert Martin提出了面向对象5个设计原则, Single responsibility, Open-closed, Liskov substitution, Interface segregation and Dependency inversion, 即SOLID原则.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/solid/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <!-- Now we're back to normal posts. Note the links used under href in both headers.-->
+        <h1 class="entry-title"><a href="/blog/spring/">Spring</a></h1>
+      
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-17T20:47:00+08:00" pubdate data-updated="true">2014-02-17</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h1 id="toc_0">框架结构</h1>
+
+<p>Spring 框架由7个模块组成</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>------------------------------
+</span><span class='line'>| AOP | ORM | WEB      | MVC |
+</span><span class='line'>|     |----------------|     |
+</span><span class='line'>|     | DAO | Context  |     |
+</span><span class='line'>------------------------------
+</span><span class='line'>|     Spring Core            |
+</span><span class='line'>------------------------------</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/spring/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -313,6 +418,14 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/solid/">Solid</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/spring/">Spring</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/maven/">Maven</a>
       </li>
     
@@ -324,22 +437,16 @@
         <a href="/blog/php-array/">PHP Array</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/php-zval/">PHP Zval</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/use-markdown/">把博客迁到github</a>
-      </li>
-    
   </ul>
 </section>
 <section>
 <h1>Categories</h1>
 <ul id="categories">
-    <li class='category'><a href='/blog/categories/maven/'>maven (1)</a></li>
+    <li class='category'><a href='/blog/categories/oo/'>OO (1)</a></li>
+<li class='category'><a href='/blog/categories/maven/'>maven (1)</a></li>
 <li class='category'><a href='/blog/categories/parallel/'>parallel (1)</a></li>
 <li class='category'><a href='/blog/categories/php/'>php (2)</a></li>
+<li class='category'><a href='/blog/categories/spring/'>spring (1)</a></li>
 <li class='category'><a href='/blog/categories/tool/'>tool (1)</a></li>
 <li class='category'><a href='/blog/categories/zval/'>zval (1)</a></li>
  

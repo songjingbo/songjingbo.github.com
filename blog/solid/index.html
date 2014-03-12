@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: maven - Vneptune's paper</title>
+  <title>solid - Vneptune's paper</title>
   <meta name="author" content="vneptune">
 
   
-  <meta name="description" content="Category: maven">
+  <meta name="description" content="这两天看了看spring的设计, 想到了OO的SOLID原则，这里顺便整理一下备忘 :) 为了设计出易于维护和扩展的程序, Robert Martin提出了面向对象5个设计原则, Single responsibility, Open-closed, Liskov substitution, &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://songjingbo.github.comblog/categories/maven/">
+  <link rel="canonical" href="http://songjingbo.github.com/blog/solid/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -74,36 +74,121 @@
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Category: Maven</h1>
+    
+      
+        <h1 class="entry-title">Solid</h1>
+      
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-18T23:01:00+08:00" pubdate data-updated="true">2014-02-18</time>
+        
+      </p>
     
   </header>
-  
-  <div id="blog-archives" class="category">
 
 
+<div class="entry-content"><p>这两天看了看spring的设计, 想到了OO的SOLID原则，这里顺便整理一下备忘 :)</p>
 
-  
-  <h2>2014</h2>
+<p>为了设计出易于维护和扩展的程序, Robert Martin提出了面向对象5个设计原则, Single responsibility, Open-closed, Liskov substitution, Interface segregation and Dependency inversion, 即SOLID原则.</p>
 
-<article>
-  
-<h1><a href="/blog/maven/">maven</a></h1>
-<time datetime="2014-02-16T21:26:00+08:00" pubdate><span class='month'>Feb</span> <span class='day'>16</span> <span class='year'>2014</span></time>
+<!--more-->
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/maven/'>maven</a></span>
-</footer>
+<h3 id="toc_0"><strong>S</strong>ingle Resposibility Principle</h3>
 
+<p>&quot;a class should have only a single responsibility&quot;</p>
 
-</article>
+<h3 id="toc_1"><strong>O</strong>pen Closed principle</h3>
 
+<p>&quot;software entities should be open for extension, but closed for modification&quot;</p>
+
+<h3 id="toc_2"><strong>L</strong>iskov Substituion Principle</h3>
+
+<p>&quot;objects in a program should be replaceable with instances of their subtypes without altering the correctness of that program&quot;</p>
+
+<h3 id="toc_3"><strong>I</strong>nterface Segregation Principle</h3>
+
+<p>&quot;clients should not be forced to depend upon interfaces that they do not use. In another word, many client-specific interfaces are better than one general-purpose interface&quot;</p>
+
+<h3 id="toc_4"><strong>D</strong>ependecy Inversion Principle</h3>
+
+<p>&quot;Depend upon Abstractions. Do not depend upon concretions&quot;</p>
+
+<p><em>本文地址: <a href=http://www.vneptune.com/blog/solid/> <a href="http://www.vneptune.com/blog/solid/">http://www.vneptune.com/blog/solid/</a></a></em></p>
+
+<p><em>转载请注明出处</em></p>
 </div>
 
+
+  <footer>
+    <p class="meta">
+      
   
+
+<span class="byline author vcard">Posted by <span class="fn">vneptune</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-18T23:01:00+08:00" pubdate data-updated="true">2014-02-18</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/oo/'>OO</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://songjingbo.github.com/blog/solid/" data-via="" data-counturl="http://songjingbo.github.com/blog/solid/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left articlenav" href="/blog/spring/" title="Previous Post: spring">&laquo; spring</a>
+      
+      
+    </p>
+  </footer>
 </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
 
 </div>
 
@@ -168,7 +253,10 @@
       var disqus_shortname = 'vneptune';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://songjingbo.github.com/blog/solid/';
+        var disqus_url = 'http://songjingbo.github.com/blog/solid/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

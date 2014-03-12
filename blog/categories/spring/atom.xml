@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: spring | Vneptune's paper]]></title>
+  <link href="http://songjingbo.github.com/blog/categories/spring/atom.xml" rel="self"/>
+  <link href="http://songjingbo.github.com/"/>
+  <updated>2014-03-12T19:59:52+08:00</updated>
+  <id>http://songjingbo.github.com/</id>
+  <author>
+    <name><![CDATA[vneptune]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[spring]]></title>
+    <link href="http://songjingbo.github.com/blog/spring/"/>
+    <updated>2014-02-17T20:47:00+08:00</updated>
+    <id>http://songjingbo.github.com/blog/spring</id>
+    <content type="html"><![CDATA[<h1 id="toc_0">框架结构</h1>
+
+<p>Spring 框架由7个模块组成</p>
+<div class="highlight"><pre><code class="text">    ------------------------------
+    | AOP | ORM | WEB      | MVC |
+    |     |----------------|     |
+    |     | DAO | Context  |     |
+    ------------------------------
+    |     Spring Core            |
+    ------------------------------
+</code></pre></div>
+<!--more-->
+
+<p>每个模块的功能如下</p>
+
+<p>Core: 主要组件是 BeanFactory，实现控制反转(IOC), 通过配置解耦程序代码</p>
+
+<p>Context: 上下文配置, 包括企业服务，例如 JNDI、EJB、电子邮件、国际化、校验和调度功能</p>
+
+<p>AOP: 提供AOP支持</p>
+
+<p>DAO：DB访问</p>
+
+<p>ORM：提供ORM工具，其中包括 JDO、Hibernate</p>
+
+<p>Web: 提供Web应用程序上下文. 支持与 Jakarta Struts 的集成</p>
+
+<p>MVC: MVC框架</p>
+
+<p>TODO </p>
+
+<p><em>本文地址: <a href=http://www.vneptune.com/blog/spring/> <a href="http://www.vneptune.com/blog/spring/">http://www.vneptune.com/blog/spring/</a></a></em></p>
+
+<p><em>转载请注明出处</em></p>
+]]></content>
+  </entry>
+  
+</feed>

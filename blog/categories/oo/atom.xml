@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: OO | Vneptune's paper]]></title>
+  <link href="http://songjingbo.github.com/blog/categories/oo/atom.xml" rel="self"/>
+  <link href="http://songjingbo.github.com/"/>
+  <updated>2014-03-12T19:59:52+08:00</updated>
+  <id>http://songjingbo.github.com/</id>
+  <author>
+    <name><![CDATA[vneptune]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[solid]]></title>
+    <link href="http://songjingbo.github.com/blog/solid/"/>
+    <updated>2014-02-18T23:01:00+08:00</updated>
+    <id>http://songjingbo.github.com/blog/solid</id>
+    <content type="html"><![CDATA[<p>这两天看了看spring的设计, 想到了OO的SOLID原则，这里顺便整理一下备忘 :)</p>
+
+<p>为了设计出易于维护和扩展的程序, Robert Martin提出了面向对象5个设计原则, Single responsibility, Open-closed, Liskov substitution, Interface segregation and Dependency inversion, 即SOLID原则.</p>
+
+<!--more-->
+
+<h3 id="toc_0"><strong>S</strong>ingle Resposibility Principle</h3>
+
+<p>&quot;a class should have only a single responsibility&quot;</p>
+
+<h3 id="toc_1"><strong>O</strong>pen Closed principle</h3>
+
+<p>&quot;software entities should be open for extension, but closed for modification&quot;</p>
+
+<h3 id="toc_2"><strong>L</strong>iskov Substituion Principle</h3>
+
+<p>&quot;objects in a program should be replaceable with instances of their subtypes without altering the correctness of that program&quot;</p>
+
+<h3 id="toc_3"><strong>I</strong>nterface Segregation Principle</h3>
+
+<p>&quot;clients should not be forced to depend upon interfaces that they do not use. In another word, many client-specific interfaces are better than one general-purpose interface&quot;</p>
+
+<h3 id="toc_4"><strong>D</strong>ependecy Inversion Principle</h3>
+
+<p>&quot;Depend upon Abstractions. Do not depend upon concretions&quot;</p>
+
+<p><em>本文地址: <a href=http://www.vneptune.com/blog/solid/> <a href="http://www.vneptune.com/blog/solid/">http://www.vneptune.com/blog/solid/</a></a></em></p>
+
+<p><em>转载请注明出处</em></p>
+]]></content>
+  </entry>
+  
+</feed>
