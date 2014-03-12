@@ -1,0 +1,38 @@
+---
+layout: post
+title: "solid"
+date: 2014-02-18 23:01
+comments: true
+categories: "OO"
+---
+
+这两天看了看spring的设计, 想到了OO的SOLID原则，这里顺便整理一下备忘 :)
+
+为了设计出易于维护和扩展的程序, Robert Martin提出了面向对象5个设计原则, Single responsibility, Open-closed, Liskov substitution, Interface segregation and Dependency inversion, 即SOLID原则.
+
+<!--more-->
+
+### **S**ingle Resposibility Principle
+
+"a class should have only a single responsibility"
+
+### **O**pen Closed principle
+
+"software entities should be open for extension, but closed for modification"
+
+### **L**iskov Substituion Principle
+
+"objects in a program should be replaceable with instances of their subtypes without altering the correctness of that program"
+
+### **I**nterface Segregation Principle
+
+"clients should not be forced to depend upon interfaces that they do not use. In another word, many client-specific interfaces are better than one general-purpose interface"
+
+### **D**ependecy Inversion Principle
+
+"Depend upon Abstractions. Do not depend upon concretions"
+
+
+*本文地址: <a href=http://www.vneptune.com/blog/solid/> http://www.vneptune.com/blog/solid/</a>*
+
+*转载请注明出处*

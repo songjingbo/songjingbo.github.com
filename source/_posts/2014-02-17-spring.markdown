@@ -1,0 +1,45 @@
+---
+layout: post
+title: "spring"
+date: 2014-02-17 20:47
+comments: true
+categories: "spring"
+---
+
+# 框架结构
+
+Spring 框架由7个模块组成
+
+```
+    ------------------------------
+    | AOP | ORM | WEB      | MVC |
+    |     |----------------|     |
+    |     | DAO | Context  |     |
+    ------------------------------
+    |     Spring Core            |
+    ------------------------------
+```
+
+<!--more-->
+
+每个模块的功能如下
+
+Core: 主要组件是 BeanFactory，实现控制反转(IOC), 通过配置解耦程序代码
+
+Context: 上下文配置, 包括企业服务，例如 JNDI、EJB、电子邮件、国际化、校验和调度功能
+
+AOP: 提供AOP支持
+
+DAO：DB访问
+
+ORM：提供ORM工具，其中包括 JDO、Hibernate
+
+Web: 提供Web应用程序上下文. 支持与 Jakarta Struts 的集成
+
+MVC: MVC框架
+
+TODO 
+
+*本文地址: <a href=http://www.vneptune.com/blog/spring/> http://www.vneptune.com/blog/spring/</a>*
+
+*转载请注明出处*
